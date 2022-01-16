@@ -1,0 +1,259 @@
+version: 3.188.3
+
+# Credentials for accessing AllureTestOps as Admin on default auth scheme
+username: admin
+password: admin
+
+# Security Context
+runAsUser: 65534
+
+# your-domain.tld
+host: localhost
+
+# Registry Auth
+registry:
+  enabled: false # Private registry or Proxy like Nexus
+  name: allure/ # Prefix with registry name, should end with /
+  imagePullSecret: allure-server
+  pullPolicy: IfNotPresent
+
+rbac:
+  enabled: true
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+
+network:
+  ingress: # Nginx Ingress
+    enabled: false
+    className:
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+  istio: # Istio Gateway
+    enabled: false
+    gateway:
+      name: ingressgateway
+      selector: istio # e.g. qameta.io/istio-ingressgateway
+    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru" # makes Allure TestOps accessible from Jira Plugin
+  tls:
+    enabled: false
+    secretName: allure-tls # Secret with SSL termination secrets.
+    hstsEnabled: false
+
+redis:
+  enabled: true
+  password: allure
+
+rabbitmq:
+  enabled: true
+  external:
+    enabled: false
+    host: mq.example.com
+  auth:
+    erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx # Set your own random string
+    username: allure
+    password: allure
+  resources: {}
+
+postgresql:
+  enabled: true
+  postgresqlUsername: allure
+  postgresqlPassword: allure
+  external:
+    endpoint: db.example.com
+    uaaUsername: uaa
+    uaaPassword: secret
+    reportUsername: report
+    reportPassword: secret
+  initdbScripts:
+    init.sql: |
+      CREATE DATABASE uaa TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+      CREATE DATABASE report TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+  persistence:
+    size: 20Gi
+
+# Local FS is NOT disabled for migration purpose. Please bear in mind that primary FS for allure is S3
+file_system:
+  external: false
+  pathstyle: true
+  migration:
+    enabled: false
+    directory: /opt/allure/report/storage
+  s3:
+    endpoint: https://s3.amazonaws.com
+    bucket: allure-testops
+    region: eu-central-1
+    accessKey: foo
+    secretKey: bar
+
+gateway:
+  replicaCount: 1
+  image: allure-gateway
+  tolerations: []
+  affinity: {}
+  nodeSelector: {}
+  service:
+    port: 8080
+  env:
+    open:
+      TZ: "Europe/Moscow"
+      ALLURE_SECURE: "true"
+      ALLURE_JWT_ACCESS_TOKEN_VALIDITY_SECONDS: "57600"
+      SPRING_OUTPUT_ANSI_ENABLED: never
+      LOGGING_LEVEL_IO_QAMETA_ALLURE: warn
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: warn
+      SPRING_SESSION_STORE_TYPE: REDIS
+      SPRING_PROFILES_ACTIVE: kubernetes
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,configprops
+      MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE: 19s
+      JAVA_TOOL_OPTIONS: >
+        -XX:+UseG1GC
+        -XX:+UseStringDeduplication
+        -Dsun.jnu.encoding=UTF-8
+        -Dfile.encoding=UTF-8
+  resources: # One pod is good for ~ 400 users
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 1536Mi
+      cpu: 1
+  probes:
+    enabled: true
+    liveness:
+      probe:
+        periodSeconds: 40
+        timeoutSeconds: 2
+        successThreshold: 1
+        failureThreshold: 3
+        initialDelaySeconds: 60
+    readiness:
+      probe:
+        periodSeconds: 20
+        timeoutSeconds: 2
+        successThreshold: 1
+        failureThreshold: 3
+        initialDelaySeconds: 25
+
+uaa:
+  replicaCount: 1
+  image: allure-uaa
+  tolerations: []
+  affinity: {}
+  nodeSelector: {}
+  service:
+    port: 8082
+  env:
+    open:
+      TZ: "Europe/Moscow"
+      SERVER_SERVLET_CONTEXTPATH: /uaa/
+      SPRING_OUTPUT_ANSI_ENABLED: never
+      LOGGING_LEVEL_IO_QAMETA_ALLURE: warn
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: warn
+      SPRING_PROFILES_ACTIVE: kubernetes
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQL9Dialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS: 'true'
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,configprops
+      MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE: 19s
+      MANAGEMENT_HEALTH_DISKSPACE_ENABLED: "false"
+      MANAGEMENT_HEALTH_KUBERNETES_ENABLED: "false"
+      SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED: "false"
+      JAVA_TOOL_OPTIONS: >
+        -XX:+UseG1GC
+        -XX:+UseStringDeduplication
+        -Dsun.jnu.encoding=UTF-8
+        -Dfile.encoding=UTF-8
+  resources: # One pod is good for ~ 400 users
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 1536Mi
+      cpu: 1
+  probes:
+    enabled: true
+    liveness:
+      probe:
+        periodSeconds: 40
+        timeoutSeconds: 2
+        successThreshold: 1
+        failureThreshold: 3
+        initialDelaySeconds: 60
+    readiness:
+      probe:
+        periodSeconds: 20
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 10
+        initialDelaySeconds: 60
+
+report:
+  replicaCount: 1
+  image: allure-report
+  tolerations: []
+  affinity: {}
+  nodeSelector: {}
+  service:
+    port: 8081
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    # existingClaim: ""
+    size: 10Gi
+    annotations: {}
+    finalizers:
+      - kubernetes.io/pvc-protection
+  env:
+    open:
+      TZ: "Europe/Moscow"
+      SERVER_SERVLET_CONTEXTPATH: /rs/
+      SPRING_OUTPUT_ANSI_ENABLED: never
+      LOGGING_LEVEL_IO_QAMETA_ALLURE: warn
+      LOGGING_LEVEL_IO_QAMETA_ALLURE_REPORT_ISSUE_LISTENER: error
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: warn
+      LOGGING_LEVEL_COM_ZAXXER_HIKARI: warn
+      SPRING_PROFILES_ACTIVE: kubernetes
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQL9Dialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS: 'true'
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,configprops
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: 'true'
+      SERVER_ERROR_INCLUDE_STACKTRACE: always
+      SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT: "60000"
+      MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE: 19s
+      MANAGEMENT_HEALTH_DISKSPACE_ENABLED: "false"
+      MANAGEMENT_HEALTH_KUBERNETES_ENABLED: "false"
+      SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED: "false"
+      JAVA_TOOL_OPTIONS: >
+        -XX:+UseG1GC
+        -XX:+UseStringDeduplication
+        -Dsun.jnu.encoding=UTF-8
+        -Dfile.encoding=UTF-8
+  resources: # One pod is good for ~ 400 users
+    requests:
+      memory: 3Gi
+      cpu: 500m
+    limits:
+      memory: 3Gi
+      cpu: 2
+  probes:
+    enabled: true
+    liveness:
+      probe:
+        periodSeconds: 40
+        timeoutSeconds: 2
+        successThreshold: 1
+        failureThreshold: 3
+        initialDelaySeconds: 300
+    readiness:
+      probe:
+        periodSeconds: 30
+        timeoutSeconds: 5
+        successThreshold: 1
+        failureThreshold: 10
+        initialDelaySeconds: 60

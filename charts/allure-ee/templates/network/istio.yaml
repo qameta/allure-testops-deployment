@@ -1,0 +1,56 @@
+{{- if .Values.network.istio.enabled }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ template "allure-ee.fullname" . }}
+spec:
+  selector:
+    "{{ .Values.network.istio.gateway.selector }}": {{ .Values.network.istio.gateway.name }}
+  servers:
+    - hosts:
+        - {{ .Values.host }}
+      port:
+        number: 80
+        name: http
+        protocol: HTTP
+{{- if .Values.network.tls.enabled }}
+      tls:
+        httpsRedirect: true
+    - hosts:
+        - {{ .Values.host }}
+      port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: {{ .Values.network.tls.secretName }}
+{{- end }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ template "allure-ee.fullname" . }}
+spec:
+  gateways:
+    - {{ template "allure-ee.fullname" . }}
+  hosts:
+    - {{ .Values.host }}
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: {{ template "allure-ee.gateway.fullname" . }}
+            port:
+              number: {{ .Values.gateway.service.port }}
+          headers:
+            response:
+              add:
+                Content-Security-Policy: "frame-ancestors 'self' {{ .Values.network.istio.domain_exceptions }}"
+{{- if .Values.network.tls.hstsEnabled }}
+                Strict-Transport-Security: "max-age=63072000; includeSubDomains; preload;"
+{{- end }}
+{{- end }}

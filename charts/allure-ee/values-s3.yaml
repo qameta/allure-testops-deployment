@@ -1,0 +1,31 @@
+---
+# This configuration is used when Minio acting as S3 Proxy
+minio:
+  enabled: true
+  auth:
+    rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
+    rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
+  disableWebUI: true
+  service:
+    ports:
+      api: 9000
+  defaultBuckets: allure-testops
+  defaultRegion: qameta-0
+  provisioning:
+    enabled: true
+    buckets:
+      - name: allure-testops
+        region: qameta-0
+    config:
+      - name: region
+        options:
+          name: qameta-0
+  gateway:
+    enabled: true
+    type: s3 # Could be azure, gcs, nas, s3 Details @ https://artifacthub.io/packages/helm/bitnami/minio Gateway
+    replicaCount: 1
+    auth:
+      s3:
+        serviceEndpoint: https://s3.amazonaws.com # Any S3 EP except azure, gcs
+        accessKey: foo
+        secretKey: bar

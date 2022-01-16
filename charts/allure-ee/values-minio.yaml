@@ -1,0 +1,21 @@
+---
+minio:
+  enabled: true
+  auth:
+    rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
+    rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
+  disableWebUI: true
+  service:
+    ports:
+      api: 9000
+  defaultBuckets: allure-testops
+  defaultRegion: qameta-0
+  provisioning:
+    enabled: true
+    buckets:
+      - name: allure-testops
+        region: qameta-0
+    config:
+      - name: region
+        options:
+          name: qameta-0

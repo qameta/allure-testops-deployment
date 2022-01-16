@@ -1,0 +1,156 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "allure-ee.report.fullname" . }}
+  labels:
+    app: {{ template "allure-ee.report.fullname" . }}
+    version: v1
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.report.replicaCount }}
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ template "allure-ee.report.fullname" . }}
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: {{ template "allure-ee.report.fullname" . }}
+        version: v1
+      annotations:
+        prometheus.io/path: /rs/management/prometheus
+        prometheus.io/port: "{{ .Values.report.service.port }}"
+        prometheus.io/scrape: "true"
+        co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
+        co.elastic.logs/multiline.match: after
+        co.elastic.logs/multiline.negate: "true"
+    spec:
+{{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ template "allure-ee.name" . }}
+{{- end }}
+{{- if .Values.registry.enabled }}
+      imagePullSecrets:
+      - name: {{ .Values.registry.imagePullSecret }}
+{{- end }}
+      tolerations:
+{{ toYaml .Values.report.tolerations | indent 8 }}
+{{- if .Values.report.affinity }}
+      affinity:
+{{ toYaml .Values.report.affinity | indent 8 }}
+{{- end }}
+{{- if .Values.report.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.report.nodeSelector | indent 8 }}
+{{- end }}
+      containers:
+      - name: {{ template "allure-ee.report.fullname" . }}
+        image: {{ .Values.registry.name }}{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.registry.pullPolicy }}
+        securityContext:
+          runAsUser: {{ .Values.runAsUser }}
+        ports:
+        - name: http
+          containerPort: 8081
+        env:
+        - name: ALLURE_ENDPOINT
+{{- if .Values.network.tls.enabled }}
+          value: https://{{ .Values.host }}
+{{- else }}
+          value: http://{{ .Values.host }}
+        - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
+          value: http://{{ template "allure-ee.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
+{{- end }}
+{{- if .Values.rabbitmq.external.enabled }}
+        - name: SPRING_RABBITMQ_HOST
+          value: {{ .Values.rabbitmq.external.host }}
+{{- else }}
+        - name: SPRING_RABBITMQ_HOST
+          value: {{ template "allure-ee.rabbitmq.fullname" . }}
+{{- end }}
+{{- if .Values.postgresql.enabled }}
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://{{ template "allure-ee.postgresql.fullname" . }}/report
+{{- else }}
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/report?assumeMinServerVersion=11&ApplicationName=allure_report_service
+{{- end }}
+{{- if .Values.file_system.external }}
+        - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
+          value: {{ .Values.file_system.s3.endpoint }}
+        - name: ALLURE_BLOBSTORAGE_S3_BUCKET
+          value: {{ .Values.file_system.s3.bucket }}
+        - name: ALLURE_BLOBSTORAGE_S3_REGION
+          value: {{ .Values.file_system.s3.region }}
+{{- else }}
+        - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
+          value: "http://{{ template "allure-ee.minio.fullname" . }}:{{ .Values.minio.service.ports.api }}"
+        - name: ALLURE_BLOBSTORAGE_S3_BUCKET
+          value: {{ .Values.minio.defaultBuckets }}
+        - name: ALLURE_BLOBSTORAGE_S3_REGION
+          value: {{ .Values.minio.defaultRegion }}
+{{- end }}
+        - name: ALLURE_BLOBSTORAGE_TYPE
+          value: S3
+        - name: ALLURE_BLOBSTORAGE_S3_PATHSTYLEACCESS
+          value: "{{ .Values.file_system.pathstyle }}"
+{{- range $name, $value := .Values.report.env.open }}
+        - name: {{ $name | quote }}
+          value: {{ $value | quote }}
+{{- end }}
+{{- $secret_name := include "allure-ee.fullname" . }}
+        - name: "ALLURE_CRYPTO_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "password"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "reportDbUser"
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "reportDbPass"
+        - name: SPRING_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "rabbitUser"
+        - name: SPRING_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "rabbitPass"
+        - name: ALLURE_BLOBSTORAGE_S3_ACCESSKEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "s3AccessKey"
+        - name: ALLURE_BLOBSTORAGE_S3_SECRETKEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "s3SecretKey"
+{{- if .Values.report.probes.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.report.env.open.SERVER_SERVLET_CONTEXTPATH }}management/health
+            port: http
+{{ toYaml .Values.report.probes.liveness.probe | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.report.env.open.SERVER_SERVLET_CONTEXTPATH }}management/health
+            port: http
+{{ toYaml .Values.report.probes.readiness.probe | indent 10 }}
+{{- end }}
+{{- with .Values.report.resources }}
+        resources:
+{{ toYaml . | indent 10 }}
+{{- end }}

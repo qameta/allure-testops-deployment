@@ -1,0 +1,37 @@
+---
+{{- if .Values.network.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "allure-ee.fullname" . }}
+  labels:
+    app: {{ template "allure-ee.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+{{- if .Values.network.ingress.annotations }}
+  annotations:
+{{ toYaml .Values.network.ingress.annotations | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.network.ingress.className }}
+  ingressClassName: {{ .Values.network.ingress.className }}
+{{- end }}
+  rules:
+    - host: {{ .Values.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ template "allure-ee.gateway.fullname" . }}
+                port:
+                  number: {{ .Values.gateway.service.port }}
+{{- if .Values.network.tls.enabled }}
+  tls:
+    - secretName: {{ template "allure-ee.fullname" . }}
+      hosts:
+        - {{ .Values.host . }}
+{{- end -}}
+{{- end -}}

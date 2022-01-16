@@ -1,0 +1,54 @@
+{{- if .Values.file_system.migration.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fs-migration-job
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+{{- if .Values.file_system.external}}
+        - name: s3-client
+          image: d3fk/s3cmd
+          command:
+            - |
+              s3cmd put --acl-public --recursive --verbose --include * {{ .Values.file_system.migration.directory }}
+              s3://{{ .Values.file_system.s3.bucket }}
+              --host={{ .Values.file_system.s3.endpoint }}
+              --access_key={{ .Values.file_system.s3.accessKey }}
+              --secret_key={{ .Values.file_system.s3.secretKey }}
+              --region={{ .Values.file_system.s3.region }}
+              --no-check-certificate
+{{- else }}
+        - name: minio-client
+          image: bitnami/minio-client
+          command:
+            - mc mirror {{ .Values.file_system.migration.directory }} minio/{{ .Values.minio.defaultBuckets }}
+          env:
+            - name: MINIO_SERVER_HOST
+              value: http://{{ template "allure-ee.minio.fullname" . }}
+            - name: MINIO_SERVER_PORT_NUMBER
+              value: {{ .Values.minio.service.ports.api }}
+{{- $secret_name := include "allure-ee.fullname" . }}
+            - name: MINIO_SERVER_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "s3AccessKey"
+            - name: MINIO_SERVER_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "s3SecretKey"
+{{- end }}
+          volumeMounts:
+            - mountPath: "{{ .Values.file_system.migration.directory }}"
+              name: storage-volume
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.report.persistence.existingClaim | default (include "allure-ee.report.fullname" .) }}
+          emptyDir: {}
+{{- end }}

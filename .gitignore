@@ -1,0 +1,9 @@
+# Idea
+.idea
+*.iml
+
+# Charts
+charts/**/charts
+charts/**/requirements.lock
+# Configs
+configs

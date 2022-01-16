@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "allure-ee.report.fullname" . }}
+  labels:
+    app: {{ template "allure-ee.report.fullname" . }}
+    version: v1
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+{{- if .Values.report.service.annotations }}
+  annotations:
+{{ toYaml .Values.report.service.annotations | indent 4 }}
+{{- end }}
+spec:
+  selector:
+    app: {{ template "allure-ee.report.fullname" . }}
+    version: v1
+  ports:
+  - name: http
+    targetPort: {{ .Values.report.service.port }}
+    port: {{ .Values.report.service.port }}
+  type: ClusterIP

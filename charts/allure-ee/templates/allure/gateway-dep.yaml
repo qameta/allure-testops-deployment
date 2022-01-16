@@ -1,0 +1,102 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "allure-ee.gateway.fullname" . }}
+  labels:
+    app: {{ template "allure-ee.gateway.fullname" . }}
+    version: v1
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.gateway.replicaCount }}
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ template "allure-ee.gateway.fullname" . }}
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: {{ template "allure-ee.gateway.fullname" . }}
+        version: v1
+      annotations:
+        prometheus.io/path: /management/prometheus
+        prometheus.io/port: "{{ .Values.gateway.service.port }}"
+        prometheus.io/scrape: "true"
+        co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
+        co.elastic.logs/multiline.match: after
+        co.elastic.logs/multiline.negate: "true"
+    spec:
+{{- if .Values.rbac.enabled }}
+      serviceAccountName:  {{ template "allure-ee.name" . }}
+{{- end }}
+{{- if .Values.registry.enabled }}
+      imagePullSecrets:
+      - name: {{ .Values.registry.imagePullSecret }}
+{{- end }}
+      tolerations:
+{{ toYaml .Values.gateway.tolerations | indent 8 }}
+{{- if .Values.gateway.affinity }}
+      affinity:
+{{ toYaml .Values.gateway.affinity | indent 8 }}
+{{- end }}
+{{- if .Values.gateway.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.gateway.nodeSelector | indent 8 }}
+{{- end }}
+      containers:
+      - name: {{ template "allure-ee.gateway.fullname" . }}
+        image: {{ .Values.registry.name }}{{ .Values.gateway.image }}:{{ .Values.version | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.registry.pullPolicy }}
+        securityContext:
+          runAsUser: {{ .Values.runAsUser }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.gateway.service.port }}
+        env:
+        - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
+          value: http://{{ template "allure-ee.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
+{{- range $name, $value := .Values.gateway.env.open }}
+        - name: {{ $name | quote }}
+          value: {{ $value | quote }}
+{{- end }}
+{{- if .Values.redis.enabled }}
+        - name: SPRING_REDIS_HOST
+          value: {{ template "allure-ee.redis.fullname" . }}
+        - name: SPRING_REDIS_PASSWORD
+          value: {{ .Values.redis.password }}
+{{- end }}
+{{- $secret_name := include "allure-ee.fullname" . }}
+        - name: ALLURE_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "jwtSecret"
+{{- range $name, $value := .Values.gateway.env.secret }}
+{{- if not (empty $value) }}
+        - name: {{ $name | quote }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: {{ printf "%s.%s" "gateway" $name | quote }}
+{{- end }}
+{{- end }}
+{{- if .Values.gateway.probes.enabled }}
+        livenessProbe:
+          httpGet:
+            path: /management/health
+            port: http
+{{ toYaml .Values.gateway.probes.liveness.probe | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /management/health
+            port: http
+{{ toYaml .Values.gateway.probes.readiness.probe | indent 10 }}
+{{- end }}
+{{- with .Values.gateway.resources }}
+        resources:
+{{ toYaml . | indent 10 }}
+{{- end }}
