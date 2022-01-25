@@ -3,7 +3,7 @@ entries:
   allure-testops:
   - apiVersion: v1
     appVersion: 3.189.2
-    created: "2022-01-25T15:15:48.052165855Z"
+    created: "2022-01-25T15:24:51.120267021Z"
     dependencies:
     - condition: rabbitmq.enabled
       name: rabbitmq
@@ -22,7 +22,7 @@ entries:
       repository: https://charts.bitnami.com/bitnami
       version: 10.0.1
     description: Allure TestOps
-    digest: 94fa4405e5c79a204be62de87e15eddbb2ab39e756e92b82c874c84a972d2a3f
+    digest: 17e33827a127573fd47b214903de78cab1cac1ff1e84f76549a1e35facf6a2b6
     home: https://qameta.io
     maintainers:
     - email: eroshenkoam@qameta.io
@@ -37,4 +37,4 @@ entries:
     urls:
     - https://qameta.github.io/allure-testops-deployment/allure-testops-1.0.1.tgz
     version: 1.0.1
-generated: "2022-01-25T15:15:48.035982234Z"
+generated: "2022-01-25T15:24:51.103639207Z"
