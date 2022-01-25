@@ -1,11 +1,11 @@
-{{- if .Values.file_system.migration.enabled -}}
+{{- if .Values.fs.migration.enabled -}}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ template "allure-ee.report.fullname" . }}
+  name: {{ template "allure-testops.report.fullname" . }}
   labels:
-    app: {{ template "allure-ee.report.fullname" . }}
+    app: {{ template "allure-testops.report.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"

@@ -2,7 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "allure-ee.name" -}}
+{{- define "allure-testops.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -18,7 +18,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "allure-ee.chart" -}}
+{{- define "allure-testops.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -26,7 +26,7 @@ Create chart name and version as used by the chart label.
 Create a default fully qualified gateway name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "allure-ee.gateway.fullname" -}}
+{{- define "allure-testops.gateway.fullname" -}}
 {{- printf "%s-%s" .Release.Name "gateway" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -34,7 +34,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Create a default fully qualified uaa name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "allure-ee.uaa.fullname" -}}
+{{- define "allure-testops.uaa.fullname" -}}
 {{- printf "%s-%s" .Release.Name "uaa" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -42,7 +42,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Create a default fully qualified report name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "allure-ee.report.fullname" -}}
+{{- define "allure-testops.report.fullname" -}}
 {{- printf "%s-%s" .Release.Name "report" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -50,7 +50,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Create a default fully qualified rabbitmq name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "allure-ee.rabbitmq.fullname" -}}
+{{- define "allure-testops.rabbitmq.fullname" -}}
 {{- printf "%s-%s" .Release.Name "rabbitmq" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -58,7 +58,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Create a default fully qualified minio name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "allure-ee.minio.fullname" -}}
+{{- define "allure-testops.minio.fullname" -}}
 {{- printf "%s-%s" .Release.Name "minio" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -66,7 +66,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Create a default fully qualified postgresql name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "allure-ee.postgresql.fullname" -}}
+{{- define "allure-testops.postgresql.fullname" -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -74,6 +74,12 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Create a default fully qualified postgresql name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "allure-ee.redis.fullname" -}}
-{{- printf "%s-%s-master" .Release.Name "redis" | trunc 63 | trimSuffix "-" -}}
+{{- define "allure-testops.redis.fullname" -}}
+{{- printf "%s-%s" .Release.Name "redis" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "imagePullSecret" }}
+{{- with .Values.registry }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .repo .auth.username .auth.password (printf "%s:%s" .auth.username .auth.password | b64enc) | b64enc }}
+{{- end }}
+{{- end }}

@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "allure-ee.uaa.fullname" . }}
+  name: {{ template "allure-testops.uaa.fullname" . }}
   labels:
-    app: {{ template "allure-ee.uaa.fullname" . }}
+    app: {{ template "allure-testops.uaa.fullname" . }}
     version: v1
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
@@ -15,7 +15,7 @@ metadata:
 {{- end }}
 spec:
   selector:
-    app: {{ template "allure-ee.uaa.fullname" . }}
+    app: {{ template "allure-testops.uaa.fullname" . }}
     version: v1
   ports:
   - name: http

@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "allure-ee.gateway.fullname" . }}
+  name: {{ template "allure-testops.gateway.fullname" . }}
   labels:
-    app: {{ template "allure-ee.gateway.fullname" . }}
+    app: {{ template "allure-testops.gateway.fullname" . }}
     version: v1
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
@@ -15,12 +15,12 @@ spec:
 {{ toYaml .Values.strategy | indent 4 }}
   selector:
     matchLabels:
-      app: {{ template "allure-ee.gateway.fullname" . }}
+      app: {{ template "allure-testops.gateway.fullname" . }}
       version: v1
   template:
     metadata:
       labels:
-        app: {{ template "allure-ee.gateway.fullname" . }}
+        app: {{ template "allure-testops.gateway.fullname" . }}
         version: v1
       annotations:
         prometheus.io/path: /management/prometheus
@@ -31,7 +31,7 @@ spec:
         co.elastic.logs/multiline.negate: "true"
     spec:
 {{- if .Values.rbac.enabled }}
-      serviceAccountName:  {{ template "allure-ee.name" . }}
+      serviceAccountName:  {{ template "allure-testops.name" . }}
 {{- end }}
 {{- if .Values.registry.enabled }}
       imagePullSecrets:
@@ -48,8 +48,8 @@ spec:
 {{ toYaml .Values.gateway.nodeSelector | indent 8 }}
 {{- end }}
       containers:
-      - name: {{ template "allure-ee.gateway.fullname" . }}
-        image: {{ .Values.registry.name }}{{ .Values.gateway.image }}:{{ .Values.version | default .Chart.AppVersion }}
+      - name: {{ template "allure-testops.gateway.fullname" . }}
+        image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.gateway.image }}:{{ .Values.version | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.registry.pullPolicy }}
         securityContext:
           runAsUser: {{ .Values.runAsUser }}
@@ -58,32 +58,41 @@ spec:
           containerPort: {{ .Values.gateway.service.port }}
         env:
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: http://{{ template "allure-ee.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
+          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
 {{- range $name, $value := .Values.gateway.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
 {{- end }}
+{{- $secret_name := include "allure-ee.fullname" . }}
+{{- if .Values.redis.sentinel.enabled }}
+        - name: SPRING_REDIS_SENTINEL_NODES
+          value: "{{ .Values.redis.sentinel.nodes }}"
+        - name: SPRING_REDIS_SENTINEL_MASTER
+          value: "{{ .Values.redis.sentinel.master }}"
+        - name: SPRING_REDIS_SENTINEL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "redisPass"
+{{- else }}
 {{- if .Values.redis.enabled }}
         - name: SPRING_REDIS_HOST
-          value: {{ template "allure-ee.redis.fullname" . }}
-        - name: SPRING_REDIS_PASSWORD
-          value: {{ .Values.redis.password }}
+          value: {{ template "allure-testops.redis.fullname" . }}
+{{- else }}
+        - name: SPRING_REDIS_HOST
+          value: {{ .Values.redis.host }} }
 {{- end }}
-{{- $secret_name := include "allure-ee.fullname" . }}
+        - name: SPRING_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "redisPass"
+{{- end }}
         - name: ALLURE_JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "jwtSecret"
-{{- range $name, $value := .Values.gateway.env.secret }}
-{{- if not (empty $value) }}
-        - name: {{ $name | quote }}
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: {{ printf "%s.%s" "gateway" $name | quote }}
-{{- end }}
-{{- end }}
 {{- if .Values.gateway.probes.enabled }}
         livenessProbe:
           httpGet:

@@ -1,4 +1,4 @@
-version: 3.188.3
+version: 3.189.2
 
 # Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -10,12 +10,19 @@ runAsUser: 65534
 # your-domain.tld
 host: localhost
 
-# Registry Auth
+# Registry Auth. Access to registry secrets can be obtained from QAMeta team
 registry:
-  enabled: false # Private registry or Proxy like Nexus
-  name: allure/ # Prefix with registry name, should end with /
+  # Private registry or Proxy like Nexus
+  enabled: false
+  # Registry Domain like quay.io / docker.io / ghcr.io / ...
+  repo: docker.io
+  # Prefix with registry name
+  name: allure
   imagePullSecret: allure-server
   pullPolicy: IfNotPresent
+  auth:
+    username: foo
+    password: bar
 
 rbac:
   enabled: true
@@ -26,28 +33,40 @@ strategy:
     maxUnavailable: 0
 
 network:
-  ingress: # Nginx Ingress
+  # Nginx Ingress
+  ingress:
     enabled: false
     className:
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-  istio: # Istio Gateway
+  # Istio Gateway
+  istio:
     enabled: false
     gateway:
       name: ingressgateway
       selector: istio # e.g. qameta.io/istio-ingressgateway
     domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru" # makes Allure TestOps accessible from Jira Plugin
+  # TLS Settings
   tls:
     enabled: false
     secretName: allure-tls # Secret with SSL termination secrets.
     hstsEnabled: false
 
+# Redis Config
 redis:
+  # Set Disabled if you have external Redis
   enabled: true
+  # External Redis Host
+  host: redis.example.com
   password: allure
+  sentinel:
+    enabled: false
+    master: big_master
+    nodes: []
 
+# RabbitMQ Config
 rabbitmq:
   enabled: true
   external:
@@ -77,7 +96,9 @@ postgresql:
     size: 20Gi
 
 # Local FS is NOT disabled for migration purpose. Please bear in mind that primary FS for allure is S3
-file_system:
+fs:
+  # Supported: S3, LOCAL, NFS
+  type: "S3"
   external: false
   pathstyle: true
   migration:
@@ -89,6 +110,11 @@ file_system:
     region: eu-central-1
     accessKey: foo
     secretKey: bar
+  # Required only if type is Local or NFS
+  mountPoint: /storage
+  # Create NFS Volume First as PV
+  pvc:
+    claimName: ""
 
 gateway:
   replicaCount: 1
@@ -201,9 +227,7 @@ report:
   service:
     port: 8081
   persistence:
-    enabled: true
     accessMode: ReadWriteOnce
-    # existingClaim: ""
     size: 10Gi
     annotations: {}
     finalizers:

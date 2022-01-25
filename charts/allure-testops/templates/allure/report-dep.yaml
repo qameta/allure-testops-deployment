@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "allure-ee.report.fullname" . }}
+  name: {{ template "allure-testops.report.fullname" . }}
   labels:
-    app: {{ template "allure-ee.report.fullname" . }}
+    app: {{ template "allure-testops.report.fullname" . }}
     version: v1
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
@@ -15,12 +15,12 @@ spec:
 {{ toYaml .Values.strategy | indent 4 }}
   selector:
     matchLabels:
-      app: {{ template "allure-ee.report.fullname" . }}
+      app: {{ template "allure-testops.report.fullname" . }}
       version: v1
   template:
     metadata:
       labels:
-        app: {{ template "allure-ee.report.fullname" . }}
+        app: {{ template "allure-testops.report.fullname" . }}
         version: v1
       annotations:
         prometheus.io/path: /rs/management/prometheus
@@ -31,7 +31,7 @@ spec:
         co.elastic.logs/multiline.negate: "true"
     spec:
 {{- if .Values.rbac.enabled }}
-      serviceAccountName: {{ template "allure-ee.name" . }}
+      serviceAccountName: {{ template "allure-testops.name" . }}
 {{- end }}
 {{- if .Values.registry.enabled }}
       imagePullSecrets:
@@ -48,7 +48,7 @@ spec:
 {{ toYaml .Values.report.nodeSelector | indent 8 }}
 {{- end }}
       containers:
-      - name: {{ template "allure-ee.report.fullname" . }}
+      - name: {{ template "allure-testops.report.fullname" . }}
         image: {{ .Values.registry.name }}{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}
         imagePullPolicy: {{ .Values.registry.pullPolicy }}
         securityContext:
@@ -57,38 +57,40 @@ spec:
         - name: http
           containerPort: 8081
         env:
+{{- $secret_name := include "allure-ee.fullname" . }}
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
           value: https://{{ .Values.host }}
 {{- else }}
           value: http://{{ .Values.host }}
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: http://{{ template "allure-ee.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
+          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
 {{- end }}
 {{- if .Values.rabbitmq.external.enabled }}
         - name: SPRING_RABBITMQ_HOST
           value: {{ .Values.rabbitmq.external.host }}
 {{- else }}
         - name: SPRING_RABBITMQ_HOST
-          value: {{ template "allure-ee.rabbitmq.fullname" . }}
+          value: {{ template "allure-testops.rabbitmq.fullname" . }}
 {{- end }}
 {{- if .Values.postgresql.enabled }}
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:postgresql://{{ template "allure-ee.postgresql.fullname" . }}/report
+          value: jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report
 {{- else }}
         - name: SPRING_DATASOURCE_URL
           value: jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/report?assumeMinServerVersion=11&ApplicationName=allure_report_service
 {{- end }}
-{{- if .Values.file_system.external }}
+{{- if eq .Values.fs.type "S3" }}
+{{- if .Values.fs.external }}
         - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
-          value: {{ .Values.file_system.s3.endpoint }}
+          value: {{ .Values.fs.s3.endpoint }}
         - name: ALLURE_BLOBSTORAGE_S3_BUCKET
-          value: {{ .Values.file_system.s3.bucket }}
+          value: {{ .Values.fs.s3.bucket }}
         - name: ALLURE_BLOBSTORAGE_S3_REGION
-          value: {{ .Values.file_system.s3.region }}
+          value: {{ .Values.fs.s3.region }}
 {{- else }}
         - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
-          value: "http://{{ template "allure-ee.minio.fullname" . }}:{{ .Values.minio.service.ports.api }}"
+          value: "http://{{ template "allure-testops.minio.fullname" . }}:{{ .Values.minio.service.ports.api }}"
         - name: ALLURE_BLOBSTORAGE_S3_BUCKET
           value: {{ .Values.minio.defaultBuckets }}
         - name: ALLURE_BLOBSTORAGE_S3_REGION
@@ -97,12 +99,27 @@ spec:
         - name: ALLURE_BLOBSTORAGE_TYPE
           value: S3
         - name: ALLURE_BLOBSTORAGE_S3_PATHSTYLEACCESS
-          value: "{{ .Values.file_system.pathstyle }}"
+          value: "{{ .Values.fs.pathstyle }}"
+        - name: ALLURE_BLOBSTORAGE_S3_ACCESSKEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "s3AccessKey"
+        - name: ALLURE_BLOBSTORAGE_S3_SECRETKEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "s3SecretKey"
+{{- else }}
+        - name: ALLURE_BLOBSTORAGE_TYPE
+          value: FILE_SYSTEM
+        - name: ALLURE_BLOBSTORAGE_FILESYSTEM_DIRECTORY
+          value: {{ .Values.fs.mountPoint }}
+{{- end }}
 {{- range $name, $value := .Values.report.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
 {{- end }}
-{{- $secret_name := include "allure-ee.fullname" . }}
         - name: "ALLURE_CRYPTO_PASSWORD"
           valueFrom:
             secretKeyRef:
@@ -128,16 +145,6 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "rabbitPass"
-        - name: ALLURE_BLOBSTORAGE_S3_ACCESSKEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "s3AccessKey"
-        - name: ALLURE_BLOBSTORAGE_S3_SECRETKEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "s3SecretKey"
 {{- if .Values.report.probes.enabled }}
         livenessProbe:
           httpGet:
@@ -153,4 +160,13 @@ spec:
 {{- with .Values.report.resources }}
         resources:
 {{ toYaml . | indent 10 }}
+{{- end }}
+{{- if eq .Values.fs.type "NFS" }}
+        volumeMounts:
+          - mountPath: .Values.fs.mountPoint
+            name: storage
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.fs.pvc.claimName }}
 {{- end }}

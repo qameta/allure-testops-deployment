@@ -25,7 +25,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ template "allure-ee.gateway.fullname" . }}
+                name: {{ template "allure-testops.gateway.fullname" . }}
                 port:
                   number: {{ .Values.gateway.service.port }}
 {{- if .Values.network.tls.enabled }}

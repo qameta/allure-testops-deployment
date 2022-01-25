@@ -3,10 +3,10 @@
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ template "allure-ee.name" . }}-namespace-reader
+  name: {{ template "allure-testops.name" . }}-namespace-reader
   labels:
-    app: {{ template "allure-ee.name" . }}
-    chart: {{ template "allure-ee.chart" . }}
+    app: {{ template "allure-testops.name" . }}
+    chart: {{ template "allure-testops.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 rules:
