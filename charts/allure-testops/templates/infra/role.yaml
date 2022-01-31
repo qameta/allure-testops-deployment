@@ -10,7 +10,5 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 rules:
- - apiGroups: [""]
-   resources: ["endpoints", "services", "pods", "configmaps", "secrets"]
-   verbs: ["get", "list", "watch"]
+{{ toYaml .Values.rbac.rules | indent 2}}
 {{- end -}}

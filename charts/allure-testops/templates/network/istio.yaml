@@ -6,7 +6,9 @@ metadata:
   name: {{ template "allure-ee.fullname" . }}
 spec:
   selector:
-    "{{ .Values.network.istio.gateway.selector }}": {{ .Values.network.istio.gateway.name }}
+{{- with .Values.network.istio.gatewaySelector }}
+{{ toYaml . | indent 4 }}
+{{- end }}
   servers:
     - hosts:
         - {{ .Values.host }}

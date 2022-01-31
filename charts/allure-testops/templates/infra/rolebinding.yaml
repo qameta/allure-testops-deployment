@@ -11,7 +11,7 @@ metadata:
     release: {{ .Release.Name }}
 subjects:
 - kind: ServiceAccount
-  name: {{ template "allure-testops.name" . }}
+  name: {{ template "allure-testops.name" . }}-sa
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

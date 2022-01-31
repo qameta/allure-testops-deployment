@@ -31,7 +31,7 @@ spec:
         co.elastic.logs/multiline.negate: "true"
     spec:
 {{- if .Values.rbac.enabled }}
-      serviceAccountName: {{ template "allure-testops.name" . }}
+      serviceAccountName: {{ template "allure-testops.name" . }}-sa
 {{- end }}
 {{- if .Values.registry.enabled }}
       imagePullSecrets:
@@ -64,7 +64,7 @@ spec:
 {{- else }}
           value: http://{{ .Values.host }}
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
+          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json
 {{- end }}
 {{- if .Values.rabbitmq.external.enabled }}
         - name: SPRING_RABBITMQ_HOST
@@ -96,8 +96,7 @@ spec:
         - name: ALLURE_BLOBSTORAGE_S3_REGION
           value: {{ .Values.minio.defaultRegion }}
 {{- end }}
-        - name: ALLURE_BLOBSTORAGE_TYPE
-          value: S3
+{{- if not .Values.aws.enabled }}
         - name: ALLURE_BLOBSTORAGE_S3_PATHSTYLEACCESS
           value: "{{ .Values.fs.pathstyle }}"
         - name: ALLURE_BLOBSTORAGE_S3_ACCESSKEY
@@ -110,6 +109,10 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "s3SecretKey"
+{{- else }}
+        - name: ALLURE_BLOBSTORAGE_TYPE
+          value: S3
+{{- end }}
 {{- else }}
         - name: ALLURE_BLOBSTORAGE_TYPE
           value: FILE_SYSTEM
@@ -145,6 +148,44 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "rabbitPass"
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: org.postgresql.Driver
+        - name: SPRING_JPA_DATABASE_PLATFORM
+          value: org.hibernate.dialect.PostgreSQL9Dialect
+        - name: SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS
+          value: 'true'
+        - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
+          value: "60000"
+        - name: TZ
+          value: {{ .Values.allure.timeZone }}
+        - name: SERVER_SERVLET_CONTEXTPATH
+          value: {{ .Values.allure.reportContextPath }}
+        - name: SPRING_OUTPUT_ANSI_ENABLED
+          value: never
+        - name: LOGGING_LEVEL_IO_QAMETA_ALLURE
+          value: {{ .Values.allure.logging }}
+        - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
+          value: {{ .Values.allure.logging }}
+        - name: LOGGING_LEVEL_IO_QAMETA_ALLURE_REPORT_ISSUE_LISTENER
+          value: error
+        - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
+          value: {{ .Values.allure.logging }}
+        - name: LOGGING_LEVEL_COM_ZAXXER_HIKARI
+          value: {{ .Values.allure.logging }}
+        - name: SPRING_PROFILES_ACTIVE
+          value: kubernetes
+        - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+          value: {{ .Values.allure.management.expose }}
+        - name: MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE
+          value: {{ .Values.allure.management.cacheTTL }}
+        - name: MANAGEMENT_HEALTH_DISKSPACE_ENABLED
+          value: 'false'
+        - name: MANAGEMENT_HEALTH_KUBERNETES_ENABLED
+          value: 'false'
+        - name: SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED
+          value: 'false'
+        - name: SERVER_ERROR_INCLUDE_STACKTRACE
+          value: always
 {{- if .Values.report.probes.enabled }}
         livenessProbe:
           httpGet:

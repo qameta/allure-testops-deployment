@@ -30,7 +30,7 @@ spec:
         co.elastic.logs/multiline.negate: "true"
     spec:
 {{- if .Values.rbac.enabled }}
-      serviceAccountName:  {{ template "allure-testops.name" . }}
+      serviceAccountName:  {{ template "allure-testops.name" . }}-sa
 {{- end }}
 {{- if .Values.registry.enabled }}
       imagePullSecrets:
@@ -55,6 +55,7 @@ spec:
         ports:
         - name: http
           containerPort: 8082
+{{- $secret_name := include "allure-ee.fullname" . }}
         env:
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
@@ -62,7 +63,7 @@ spec:
 {{- else }}
           value: http://{{ .Values.host }}
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}.well-known/jwks.json
+          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json
 {{- end }}
 {{- if .Values.postgresql.enabled }}
         - name: SPRING_DATASOURCE_URL
@@ -75,7 +76,6 @@ spec:
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
 {{- end }}
-{{- $secret_name := include "allure-ee.fullname" . }}
         - name: ALLURE_JWT_SECRET
           valueFrom:
             secretKeyRef:
@@ -106,15 +106,85 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "uaaDbPass"
+        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+          value: org.postgresql.Driver
+        - name: SPRING_JPA_DATABASE_PLATFORM
+          value: org.hibernate.dialect.PostgreSQL9Dialect
+        - name: SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS
+          value: 'true'
+        - name: TZ
+          value: {{ .Values.allure.timeZone }}
+        - name: SERVER_SERVLET_CONTEXTPATH
+          value: {{ .Values.allure.uaaContextPath }}
+        - name: SPRING_OUTPUT_ANSI_ENABLED
+          value: never
+        - name: LOGGING_LEVEL_IO_QAMETA_ALLURE
+          value: {{ .Values.allure.logging }}
+        - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
+          value: {{ .Values.allure.logging }}
+        - name: SPRING_PROFILES_ACTIVE
+          value: kubernetes
+        - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+          value: {{ .Values.allure.management.expose }}
+        - name: MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE
+          value: {{ .Values.allure.management.cacheTTL }}
+        - name: MANAGEMENT_HEALTH_DISKSPACE_ENABLED
+          value: 'false'
+        - name: MANAGEMENT_HEALTH_KUBERNETES_ENABLED
+          value: 'false'
+        - name: SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED
+          value: 'false'
+        - name: ALLURE_LOGIN_PRIMARY
+          value: {{ .Values.allure.auth.primary }}
+{{- if .Values.allure.auth.ldap.enabled }}
+        - name: LDAP_ENABLED
+          value: '{{ .Values.allure.auth.ldap.enabled }}'
+        - name: LDAP_REFERAL
+          value: {{ .Values.allure.auth.ldap.referal }}
+        - name: LDAP_USER_DN
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: ldapUser
+        - name: LDAP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: ldapPass
+        - name: LDAP_URL
+          value: {{ .Values.allure.auth.ldap.url }}
+        - name: LDAP_USER_DN_PATTERNS
+          value: {{ .Values.allure.auth.ldap.user.dnPatterns }}
+        - name: LDAP_USER_SEARCH_BASE
+          value: {{ .Values.allure.auth.ldap.user.searchBase }}
+        - name: LDAP_USER_SEARCH_FILTER
+          value: {{ .Values.allure.auth.ldap.user.searchFilter }}
+        - name: LDAP_GROUP_SEARCH_BASE
+          value: {{ .Values.allure.auth.ldap.group.searchBase }}
+        - name: LDAP_GROUP_SEARCH_FILTER
+          value: {{ .Values.allure.auth.ldap.group.searchFilter }}
+        - name: LDAP_GROUP_ROLE_ATTRIBUTE
+          value: {{ .Values.allure.auth.ldap.group.roleAttribute }}
+        - name: LDAP_SYNC_ROLES
+          value: '{{ .Values.allure.auth.ldap.syncRoles }}'
+        - name: LDAP_UID_ATTRIBUTE
+          value: {{ .Values.allure.auth.ldap.uidAttribute }}
+        - name: LDAP_GROUP_AUTHORITIES_ROLE_USER_GROUPS
+          value: {{ .Values.allure.auth.ldap.userGroupName }}
+        - name: LDAP_GROUP_AUTHORITIES_ROLE_ADMIN_GROUPS
+          value: {{ .Values.allure.auth.ldap.adminGroupName }}
+        - name: LDAP_DEFAULT_ROLE
+          value: {{ .Values.allure.auth.ldap.defaultRole }}
+{{- end }}
 {{- if .Values.uaa.probes.enabled }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}management/health
+            path: {{ .Values.allure.uaaContextPath }}management/health
             port: http
 {{ toYaml .Values.uaa.probes.liveness.probe | indent 10 }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.uaa.env.open.SERVER_SERVLET_CONTEXTPATH }}management/health
+            path: {{ .Values.allure.uaaContextPath }}management/health
             port: http
 {{ toYaml .Values.uaa.probes.readiness.probe | indent 10 }}
 {{- end }}
