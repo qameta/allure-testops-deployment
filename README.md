@@ -1,20 +1,21 @@
 # Allure TestOps Official k8S Deploy
 
 ### Values Example:
-```
+```yaml
+## Override Version
 version: 3.189.2
 
-# Credentials for accessing AllureTestOps as Admin on default auth scheme
+## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
 password: admin
 
-# Security Context
+## Security Context
 runAsUser: 65534
 
-# your-domain.tld
+## your-domain.tld
 host: localhost
 
-# Registry Auth. Access to registry secrets can be obtained from QAMeta team
+## Registry Auth. Access to registry secrets can be obtained from QAMeta team
 registry:
   # Private registry or Proxy like Nexus
   enabled: false
@@ -28,9 +29,34 @@ registry:
     username: foo
     password: bar
 
+## Role Based Access Control
+## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
   enabled: true
+  rules:
+    - apiGroups:
+        - ''
+      resources:
+        - endpoints
+        - services
+        - pods
+        - configmaps
+        - secrets
+      verbs:
+        - get
+        - watch
+        - list
 
+## AWS Injection
+# Make Sure you have RBAC enabled
+# Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
+aws:
+  enabled: false
+  accountId: 195700002069 # Your AWS Account ID
+  iamRole: s3-bucket-objects # Name of your AWS ROLE allowing reading/writing s3
+
+# Please be careful. Make sure you have no DB migrations with upcoming version. If so change type to Recreate and plan Downtime
+# Also please disable health checks during DB migration
 strategy:
   type: RollingUpdate
   rollingUpdate:
@@ -48,9 +74,8 @@ network:
   # Istio Gateway
   istio:
     enabled: false
-    gateway:
-      name: ingressgateway
-      selector: istio # e.g. qameta.io/istio-ingressgateway
+    gatewaySelector:
+      istio: ingressgateway
     domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru" # makes Allure TestOps accessible from Jira Plugin
   # TLS Settings
   tls:
@@ -67,7 +92,7 @@ redis:
   password: allure
   sentinel:
     enabled: false
-    master: big_master
+    masterSet: big_master
     nodes: []
 
 # RabbitMQ Config
@@ -112,6 +137,7 @@ fs:
     endpoint: https://s3.amazonaws.com
     bucket: allure-testops
     region: eu-central-1
+    # If you run Allure Testops in AWS EKS you don't need stating accessKey & secretKey
     accessKey: foo
     secretKey: bar
   # Required only if type is Local or NFS
@@ -119,6 +145,59 @@ fs:
   # Create NFS Volume First as PV
   pvc:
     claimName: ""
+
+allure:
+  timeZone: "Europe/Moscow"
+  sessionLifespan: "57600"
+  httpOnly: "true"
+  logging: warn
+  management:
+    # Endpoints to expose e.g. for Prometheus, HealthChecks etc.
+    expose: health,info,prometheus,configprops
+    cacheTTL: 20s
+  uaaContextPath: "/uaa/"
+  reportContextPath: "/rs/"
+  auth:
+    primary: system
+    ldap:
+      enabled: false
+      auth:
+        user: user
+        pass: pass
+      referal: follow
+      url: ldap://ldap.example.com:389
+      user:
+        dnPatterns: sAMAccountName={0}
+        searchBase: dc=example,dc=com
+        searchFilter: (&((objectClass=Person))(sAMAccountName={0}))
+      group:
+        searchBase: ou=qa,ou=Security Groups,dc=example,dc=com
+        searchFilter: (&(objectClass=Group)(member={0}))
+        roleAttribute: cn
+      # Syncs User Role by Group membership on any login
+      syncRoles: true
+      uidAttribute: sAMAccountName
+      # Maps your LDAP groups on Allure Groups
+      userGroupName: allure_users
+      adminGroupName: allure_admins
+      # If user is not in groups above, default role is assumed. Possible roles: ROLE_ADMIN,
+      # ROLE_USER, ROLE_AUDITOR
+      defaultRole: ROLE_AUDITOR
+    oidc:
+      enabled: false
+      client:
+        name: Google Auth
+        id: foo
+        secret: bar
+      redirectURI: 'https://example.com/login/oauth2/code/dp'
+      authMethod: client_secret_post
+      issuerURI: 'https://accounts.google.com'
+      authURI: 'https://accounts.google.com/o/oauth2/v2/auth'
+      tokenURI: 'https://oauth2.googleapis.com/token'
+      userInfoURI: 'https://openidconnect.googleapis.com/v1/userinfo'
+      jwksURI: 'https://www.googleapis.com/oauth2/v3/certs'
+      userNameAttribute: email
+      scope: openid
 
 gateway:
   replicaCount: 1
@@ -130,28 +209,18 @@ gateway:
     port: 8080
   env:
     open:
-      TZ: "Europe/Moscow"
-      ALLURE_SECURE: "true"
-      ALLURE_JWT_ACCESS_TOKEN_VALIDITY_SECONDS: "57600"
-      SPRING_OUTPUT_ANSI_ENABLED: never
-      LOGGING_LEVEL_IO_QAMETA_ALLURE: warn
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: warn
-      SPRING_SESSION_STORE_TYPE: REDIS
-      SPRING_PROFILES_ACTIVE: kubernetes
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,configprops
-      MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE: 19s
       JAVA_TOOL_OPTIONS: >
         -XX:+UseG1GC
         -XX:+UseStringDeduplication
         -Dsun.jnu.encoding=UTF-8
         -Dfile.encoding=UTF-8
-  resources: # One pod is good for ~ 400 users
+  resources:
     requests:
       memory: 1Gi
-      cpu: 500m
-    limits:
-      memory: 1536Mi
       cpu: 1
+    limits:
+      memory: 2Gi
+      cpu: 2
   probes:
     enabled: true
     liveness:
@@ -179,33 +248,21 @@ uaa:
     port: 8082
   env:
     open:
-      TZ: "Europe/Moscow"
-      SERVER_SERVLET_CONTEXTPATH: /uaa/
-      SPRING_OUTPUT_ANSI_ENABLED: never
-      LOGGING_LEVEL_IO_QAMETA_ALLURE: warn
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: warn
-      SPRING_PROFILES_ACTIVE: kubernetes
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQL9Dialect
-      SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS: 'true'
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,configprops
-      MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE: 19s
-      MANAGEMENT_HEALTH_DISKSPACE_ENABLED: "false"
-      MANAGEMENT_HEALTH_KUBERNETES_ENABLED: "false"
-      SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED: "false"
       JAVA_TOOL_OPTIONS: >
         -XX:+UseG1GC
         -XX:+UseStringDeduplication
         -Dsun.jnu.encoding=UTF-8
         -Dfile.encoding=UTF-8
-  resources: # One pod is good for ~ 400 users
+  # Considering resource planning bear in mind that many pods is good but DB connections are expensive
+  resources:
     requests:
       memory: 1Gi
       cpu: 500m
     limits:
-      memory: 1536Mi
+      memory: 2Gi
       cpu: 1
   probes:
+    # Disable them during updates involving DB migrations
     enabled: true
     liveness:
       probe:
@@ -238,38 +295,21 @@ report:
       - kubernetes.io/pvc-protection
   env:
     open:
-      TZ: "Europe/Moscow"
-      SERVER_SERVLET_CONTEXTPATH: /rs/
-      SPRING_OUTPUT_ANSI_ENABLED: never
-      LOGGING_LEVEL_IO_QAMETA_ALLURE: warn
-      LOGGING_LEVEL_IO_QAMETA_ALLURE_REPORT_ISSUE_LISTENER: error
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: warn
-      LOGGING_LEVEL_COM_ZAXXER_HIKARI: warn
-      SPRING_PROFILES_ACTIVE: kubernetes
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQL9Dialect
-      SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS: 'true'
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,configprops
-      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: 'true'
-      SERVER_ERROR_INCLUDE_STACKTRACE: always
-      SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT: "60000"
-      MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE: 19s
-      MANAGEMENT_HEALTH_DISKSPACE_ENABLED: "false"
-      MANAGEMENT_HEALTH_KUBERNETES_ENABLED: "false"
-      SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED: "false"
       JAVA_TOOL_OPTIONS: >
         -XX:+UseG1GC
         -XX:+UseStringDeduplication
         -Dsun.jnu.encoding=UTF-8
         -Dfile.encoding=UTF-8
-  resources: # One pod is good for ~ 400 users
+  # Considering resource planning bear in mind that many pods is good but DB connections are expensive
+  resources:
     requests:
       memory: 3Gi
-      cpu: 500m
+      cpu: 1
     limits:
-      memory: 3Gi
-      cpu: 2
+      memory: 4Gi
+      cpu: 4
   probes:
+    # Disable them during updates involving DB migrations
     enabled: true
     liveness:
       probe:
@@ -285,65 +325,5 @@ report:
         successThreshold: 1
         failureThreshold: 10
         initialDelaySeconds: 60
-```
-
-### Minio Example:
-```
----
-minio:
-  enabled: true
-  auth:
-    rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
-    rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
-  disableWebUI: true
-  service:
-    ports:
-      api: 9000
-  defaultBuckets: allure-testops
-  defaultRegion: qameta-0
-  provisioning:
-    enabled: true
-    buckets:
-      - name: allure-testops
-        region: qameta-0
-    config:
-      - name: region
-        options:
-          name: qameta-0
-```
-
-### Minio Gateway Example:
-```
----
-# This configuration is used when Minio acting as S3 Proxy
-minio:
-  enabled: true
-  auth:
-    rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
-    rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
-  disableWebUI: true
-  service:
-    ports:
-      api: 9000
-  defaultBuckets: allure-testops
-  defaultRegion: qameta-0
-  provisioning:
-    enabled: true
-    buckets:
-      - name: allure-testops
-        region: qameta-0
-    config:
-      - name: region
-        options:
-          name: qameta-0
-  gateway:
-    enabled: true
-    type: s3 # Could be azure, gcs, nas, s3 Details @ https://artifacthub.io/packages/helm/bitnami/minio Gateway
-    replicaCount: 1
-    auth:
-      s3:
-        serviceEndpoint: https://s3.amazonaws.com # Any S3 EP except azure, gcs
-        accessKey: foo
-        secretKey: bar
 
 ```
