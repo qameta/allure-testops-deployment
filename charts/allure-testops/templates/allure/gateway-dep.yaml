@@ -58,7 +58,7 @@ spec:
           containerPort: {{ .Values.gateway.service.port }}
         env:
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json
+          value: "http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json"
 {{- range $name, $value := .Values.gateway.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
@@ -77,10 +77,10 @@ spec:
 {{- else }}
 {{- if .Values.redis.enabled }}
         - name: SPRING_REDIS_HOST
-          value: {{ template "allure-testops.redis.fullname" . }}
+          value: "{{ template "allure-testops.redis.fullname" . }}"
 {{- else }}
         - name: SPRING_REDIS_HOST
-          value: {{ .Values.redis.host }} }
+          value: "{{ .Values.redis.host }} }"
 {{- end }}
         - name: SPRING_REDIS_PASSWORD
           valueFrom:
@@ -94,28 +94,28 @@ spec:
               name: {{ $secret_name }}
               key: "jwtSecret"
         - name: ALLURE_JWT_ACCESS_TOKEN_VALIDITY_SECONDS
-          value: {{ .Values.allure.sessionLifespan }}
+          value: "{{ .Values.allure.sessionLifespan }}"
         - name: SPRING_OUTPUT_ANSI_ENABLED
-          value: never
+          value: "never"
         - name: ALLURE_SECURE
-          value: {{ .Values.allure.httpOnly }}
+          value: "{{ .Values.allure.httpOnly }}"
         - name: TZ
-          value: {{ .Values.allure.timeZone }}
+          value: "{{ .Values.allure.timeZone }}"
         - name: LOGGING_LEVEL_IO_QAMETA_ALLURE
-          value: {{ .Values.allure.logging }}
+          value: "{{ .Values.allure.logging }}"
         - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
-          value: {{ .Values.allure.logging }}
+          value: "{{ .Values.allure.logging }}"
         - name: SPRING_SESSION_STORE_TYPE
-          value: REDIS
+          value: "REDIS"
         - name: SPRING_PROFILES_ACTIVE
-          value: kubernetes
+          value: "kubernetes"
         - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
-          value: {{ .Values.allure.management.expose }}
+          value: "{{ .Values.allure.management.expose }}"
         - name: MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE
-          value: {{ .Values.allure.management.cacheTTL }}
+          value: "{{ .Values.allure.management.cacheTTL }}"
 {{- if .Values.allure.auth.oidc.enabled }}
         - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_NAME
-          value: {{ .Values.allure.auth.oidc.client.name }}
+          value: "{{ .Values.allure.auth.oidc.client.name }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID
           valueFrom:
             secretKeyRef:
@@ -127,24 +127,36 @@ spec:
               name: {{ $secret_name }}
               key: clientSecret
         - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_REDIRECT_URI
-          value: {{ .Values.allure.auth.oidc.redirectURI }}
+          value: "{{ .Values.allure.auth.oidc.redirectURI }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_AUTHENTICATION_METHOD
           value: {{ .Values.allure.auth.oidc.authMethod }}
         - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI
-          value: {{ .Values.allure.auth.oidc.issuerURI }}
+          value: "{{ .Values.allure.auth.oidc.issuerURI }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_AUTHORIZATION_URI
-          value: {{ .Values.allure.auth.oidc.authURI }}
+          value: "{{ .Values.allure.auth.oidc.authURI }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_TOKEN_URI
-          value: {{ .Values.allure.auth.oidc.tokenURI }}
+          value: "{{ .Values.allure.auth.oidc.tokenURI }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_USER_INFO_URI
-          value: {{ .Values.allure.auth.oidc.userInfoURI }}
+          value: "{{ .Values.allure.auth.oidc.userInfoURI }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_JWK_SET_URI
-          value: {{ .Values.allure.auth.oidc.jwksURI }}
+          value: "{{ .Values.allure.auth.oidc.jwksURI }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_USER_NAME_ATTRIBUTE
-          value: {{ .Values.allure.auth.oidc.userNameAttribute }}
+          value: "{{ .Values.allure.auth.oidc.userNameAttribute }}"
         - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_SCOPE
-          value: {{ .Values.allure.auth.oidc.scope }}
+          value: "{{ .Values.allure.auth.oidc.scope }}"
 {{- end }}
+        - name: ALLURE_EE_REPORT_SERVICE_HOST
+          value: "{{ template "allure-testops.report.fullname" . }}"
+        - name: ALLURE_EE_REPORT_SERVICE_PORT
+          value: "{{ .Values.report.service.port }}"
+        - name: ALLURE_EE_UAA_SERVICE_HOST
+          value: "{{ template "allure-testops.uaa.fullname" . }}"
+        - name: ALLURE_EE_UAA_SERVICE_PORT
+          value: "{{ .Values.uaa.service.port }}"
+        - name: ALLURE_EE_GATEWAY_SERVICE_HOST
+          value: "{{ template "allure-testops.gateway.fullname" . }}"
+        - name: ALLURE_EE_GATEWAY_SERVICE_PORT
+          value: "{{ .Values.gateway.service.port }}"
 {{- if .Values.gateway.probes.enabled }}
         livenessProbe:
           httpGet:

@@ -47,9 +47,17 @@ spec:
       nodeSelector:
 {{ toYaml .Values.report.nodeSelector | indent 8 }}
 {{- end }}
+{{- if .Values.postgresql.enabled }}
+      initContainers:
+        - name: check-db-ready
+          image: postgres:9.6.5
+          command: [ 'sh', '-c',
+            'until pg_isready -h {{ template "allure-testops.postgresql.fullname" . }} -p 5432;
+             do echo waiting for database; sleep 2; done;' ]
+{{- end }}
       containers:
       - name: {{ template "allure-testops.report.fullname" . }}
-        image: {{ .Values.registry.name }}{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}
+        image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.registry.pullPolicy }}
         securityContext:
           runAsUser: {{ .Values.runAsUser }}
@@ -60,41 +68,41 @@ spec:
 {{- $secret_name := include "allure-ee.fullname" . }}
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
-          value: https://{{ .Values.host }}
+          value: "https://{{ .Values.host }}"
 {{- else }}
-          value: http://{{ .Values.host }}
+          value: "http://{{ .Values.host }}"
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json
+          value: "http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json"
 {{- end }}
 {{- if .Values.rabbitmq.external.enabled }}
         - name: SPRING_RABBITMQ_HOST
-          value: {{ .Values.rabbitmq.external.host }}
+          value: "{{ .Values.rabbitmq.external.host }}"
 {{- else }}
         - name: SPRING_RABBITMQ_HOST
-          value: {{ template "allure-testops.rabbitmq.fullname" . }}
+          value: "{{ template "allure-testops.rabbitmq.fullname" . }}"
 {{- end }}
-{{- if .Values.postgresql.enabled }}
+{{- if not .Values.postgresql.external.active }}
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report
+          value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report"
 {{- else }}
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/report?assumeMinServerVersion=11&ApplicationName=allure_report_service
+          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.reportDbName }}?assumeMinServerVersion=11&ApplicationName=allure_report_service"
 {{- end }}
 {{- if eq .Values.fs.type "S3" }}
 {{- if .Values.fs.external }}
         - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
-          value: {{ .Values.fs.s3.endpoint }}
+          value: "{{ .Values.fs.s3.endpoint }}"
         - name: ALLURE_BLOBSTORAGE_S3_BUCKET
-          value: {{ .Values.fs.s3.bucket }}
+          value: "{{ .Values.fs.s3.bucket }}"
         - name: ALLURE_BLOBSTORAGE_S3_REGION
-          value: {{ .Values.fs.s3.region }}
+          value: "{{ .Values.fs.s3.region }}"
 {{- else }}
         - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
           value: "http://{{ template "allure-testops.minio.fullname" . }}:{{ .Values.minio.service.ports.api }}"
         - name: ALLURE_BLOBSTORAGE_S3_BUCKET
-          value: {{ .Values.minio.defaultBuckets }}
+          value: "{{ .Values.minio.defaultBuckets }}"
         - name: ALLURE_BLOBSTORAGE_S3_REGION
-          value: {{ .Values.minio.defaultRegion }}
+          value: "{{ .Values.minio.defaultRegion }}"
 {{- end }}
 {{- if not .Values.aws.enabled }}
         - name: ALLURE_BLOBSTORAGE_S3_PATHSTYLEACCESS
@@ -109,15 +117,14 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "s3SecretKey"
-{{- else }}
+{{- end }}
         - name: ALLURE_BLOBSTORAGE_TYPE
           value: S3
-{{- end }}
 {{- else }}
         - name: ALLURE_BLOBSTORAGE_TYPE
           value: FILE_SYSTEM
         - name: ALLURE_BLOBSTORAGE_FILESYSTEM_DIRECTORY
-          value: {{ .Values.fs.mountPoint }}
+          value: "{{ .Values.fs.mountPoint }}"
 {{- end }}
 {{- range $name, $value := .Values.report.env.open }}
         - name: {{ $name | quote }}
@@ -149,52 +156,64 @@ spec:
               name: {{ $secret_name }}
               key: "rabbitPass"
         - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
-          value: org.postgresql.Driver
+          value: "org.postgresql.Driver"
         - name: SPRING_JPA_DATABASE_PLATFORM
-          value: org.hibernate.dialect.PostgreSQL9Dialect
+          value: "org.hibernate.dialect.PostgreSQL9Dialect"
         - name: SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS
-          value: 'true'
+          value: "true"
         - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
-          value: "60000"
+          value: "{{ .Values.postgresql.connectionTimeout }}"
         - name: TZ
-          value: {{ .Values.allure.timeZone }}
+          value: "{{ .Values.allure.timeZone }}"
         - name: SERVER_SERVLET_CONTEXTPATH
-          value: {{ .Values.allure.reportContextPath }}
+          value: "{{ .Values.allure.reportContextPath }}"
         - name: SPRING_OUTPUT_ANSI_ENABLED
-          value: never
+          value: "never"
         - name: LOGGING_LEVEL_IO_QAMETA_ALLURE
-          value: {{ .Values.allure.logging }}
+          value: "{{ .Values.allure.logging }}"
         - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
-          value: {{ .Values.allure.logging }}
+          value: "{{ .Values.allure.logging }}"
         - name: LOGGING_LEVEL_IO_QAMETA_ALLURE_REPORT_ISSUE_LISTENER
-          value: error
+          value: "error"
         - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
-          value: {{ .Values.allure.logging }}
+          value: "{{ .Values.allure.logging }}"
         - name: LOGGING_LEVEL_COM_ZAXXER_HIKARI
-          value: {{ .Values.allure.logging }}
+          value: "{{ .Values.allure.logging }}"
         - name: SPRING_PROFILES_ACTIVE
           value: kubernetes
         - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
-          value: {{ .Values.allure.management.expose }}
+          value: "{{ .Values.allure.management.expose }}"
         - name: MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE
-          value: {{ .Values.allure.management.cacheTTL }}
+          value: "{{ .Values.allure.management.cacheTTL }}"
         - name: MANAGEMENT_HEALTH_DISKSPACE_ENABLED
-          value: 'false'
+          value: "false"
         - name: MANAGEMENT_HEALTH_KUBERNETES_ENABLED
-          value: 'false'
+          value: "false"
         - name: SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED
-          value: 'false'
+          value: "false"
         - name: SERVER_ERROR_INCLUDE_STACKTRACE
-          value: always
+          value: "always"
+        - name: ALLURE_EE_REPORT_SERVICE_HOST
+          value: "{{ template "allure-testops.report.fullname" . }}"
+        - name: ALLURE_EE_REPORT_SERVICE_PORT
+          value: "{{ .Values.report.service.port }}"
+        - name: ALLURE_EE_UAA_SERVICE_HOST
+          value: "{{ template "allure-testops.uaa.fullname" . }}"
+        - name: ALLURE_EE_UAA_SERVICE_PORT
+          value: "{{ .Values.uaa.service.port }}"
+        - name: ALLURE_EE_GATEWAY_SERVICE_HOST
+          value: "{{ template "allure-testops.gateway.fullname" . }}"
+        - name: ALLURE_EE_GATEWAY_SERVICE_PORT
+          value: "{{ .Values.gateway.service.port }}"
 {{- if .Values.report.probes.enabled }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.report.env.open.SERVER_SERVLET_CONTEXTPATH }}management/health
+            path: {{ .Values.allure.reportContextPath }}management/health
             port: http
 {{ toYaml .Values.report.probes.liveness.probe | indent 10 }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.report.env.open.SERVER_SERVLET_CONTEXTPATH }}management/health
+            path: {{ .Values.allure.reportContextPath }}management/health
             port: http
 {{ toYaml .Values.report.probes.readiness.probe | indent 10 }}
 {{- end }}

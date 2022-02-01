@@ -10,12 +10,3 @@ minio:
       api: 9000
   defaultBuckets: allure-testops
   defaultRegion: qameta-0
-  provisioning:
-    enabled: true
-    buckets:
-      - name: allure-testops
-        region: qameta-0
-    config:
-      - name: region
-        options:
-          name: qameta-0

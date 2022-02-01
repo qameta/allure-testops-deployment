@@ -5,5 +5,7 @@
 # Charts
 charts/**/charts
 charts/**/requirements.lock
+*.lock
 # Configs
 configs
+*-internal.yaml

@@ -11,15 +11,6 @@ minio:
       api: 9000
   defaultBuckets: allure-testops
   defaultRegion: qameta-0
-  provisioning:
-    enabled: true
-    buckets:
-      - name: allure-testops
-        region: qameta-0
-    config:
-      - name: region
-        options:
-          name: qameta-0
   gateway:
     enabled: true
     type: s3 # Could be azure, gcs, nas, s3 Details @ https://artifacthub.io/packages/helm/bitnami/minio Gateway

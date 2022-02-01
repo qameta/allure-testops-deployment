@@ -1,0 +1,21 @@
+---
+{{- if .Values.network.certmanager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "allure-ee.fullname" . }}
+  namespace: {{ .Values.network.certmanager.namespace }}
+spec:
+  commonName: {{ .Values.host }}
+  dnsNames:
+    - {{ .Values.host }}
+  secretName: {{ .Values.network.tls.secretName }}
+  issuerRef:
+    kind: ClusterIssuer
+    name: {{ .Values.network.certmanager.issuerName }}
+    group: {{ .Values.network.certmanager.issuerGroup }}
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+{{- end }}
