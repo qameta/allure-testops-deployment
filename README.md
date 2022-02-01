@@ -3,7 +3,7 @@
 ### Values Example:
 ```yaml
 ## Override Version
-version: 3.189.2
+version: 3.190.0
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -23,7 +23,7 @@ registry:
   repo: docker.io
   # Prefix with registry name
   name: allure
-  imagePullSecret: allure-server
+  imagePullSecret: qameta-secret
   pullPolicy: IfNotPresent
   auth:
     username: foo
@@ -82,6 +82,17 @@ network:
     enabled: false
     secretName: allure-tls # Secret with SSL termination secrets.
     hstsEnabled: false
+  # Important! Qameta Team doesn't provide Certmanager itself, if you don't have one,
+  # install from https://cert-manager.io/docs/installation/ and create ClusterIssuer
+  # and provide Challenge type e.g. acme http-01 or dns-01
+  certmanager:
+    enabled: false
+    # It is important where certificate is located depending on your Ingress/Istio Gateway
+    # IstioGateway require secrets with tls certs to be located in istio-system ns
+    namespace: istio-system
+    # As Let's Encrypt is not the only provider, you may use your own.
+    issuerName: letsencrypt-issuer
+    issuerGroup: cert-manager.io
 
 # Redis Config
 redis:
@@ -89,7 +100,9 @@ redis:
   enabled: true
   # External Redis Host
   host: redis.example.com
-  password: allure
+  architecture: standalone
+  auth:
+    password: allure
   sentinel:
     enabled: false
     masterSet: big_master
@@ -109,12 +122,16 @@ rabbitmq:
 
 postgresql:
   enabled: true
+  connectionTimeout: 60000
   postgresqlUsername: allure
   postgresqlPassword: allure
   external:
+    active: false
     endpoint: db.example.com
+    uaaDbName: uaa
     uaaUsername: uaa
     uaaPassword: secret
+    reportDbName: report
     reportUsername: report
     reportPassword: secret
   initdbScripts:
@@ -146,9 +163,21 @@ fs:
   pvc:
     claimName: ""
 
+minio:
+  enabled: true
+  auth:
+    rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
+    rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
+  disableWebUI: true
+  service:
+    ports:
+      api: 9000
+  defaultBuckets: allure-testops
+  defaultRegion: qameta-0
+
 allure:
   timeZone: "Europe/Moscow"
-  sessionLifespan: "57600"
+  sessionLifespan: 57600
   httpOnly: "true"
   logging: warn
   management:
@@ -189,15 +218,15 @@ allure:
         name: Google Auth
         id: foo
         secret: bar
-      redirectURI: 'https://example.com/login/oauth2/code/dp'
+      redirectURI: 'https://example.com/login/oauth2/code/allure'
       authMethod: client_secret_post
       issuerURI: 'https://accounts.google.com'
       authURI: 'https://accounts.google.com/o/oauth2/v2/auth'
       tokenURI: 'https://oauth2.googleapis.com/token'
       userInfoURI: 'https://openidconnect.googleapis.com/v1/userinfo'
-      jwksURI: 'https://www.googleapis.com/oauth2/v3/certs'
-      userNameAttribute: email
-      scope: openid
+      jwksURI: 'https://www.googleapis.com/oauth2/v1/certs'
+      userNameAttribute: "email"
+      scope: "{openid,email,profile}"
 
 gateway:
   replicaCount: 1
@@ -237,6 +266,7 @@ gateway:
         successThreshold: 1
         failureThreshold: 3
         initialDelaySeconds: 25
+
 
 uaa:
   replicaCount: 1
@@ -325,5 +355,4 @@ report:
         successThreshold: 1
         failureThreshold: 10
         initialDelaySeconds: 60
-
 ```
