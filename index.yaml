@@ -39,6 +39,43 @@ entries:
     - https://github.com/qameta/allure-testops-deployment/releases/download/allure-testops-3.190.0/allure-testops-3.190.0.tgz
     version: 3.190.0
   - apiVersion: v2
+    appVersion: 3.190.2
+    created: "2022-02-02T16:10:41.680998707Z"
+    dependencies:
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 8.27.0
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.16.2
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.3.0
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.1.1
+    description: Allure TestOps
+    digest: 028ab004eddf41151fb0556c30847b003b28293a321b7d86a42df9e841e33dbc
+    home: https://qameta.io
+    kubeVersion: '>= 1.14.0-0'
+    maintainers:
+    - email: eroshenkoam@qameta.io
+      name: eroshenkoam
+    - email: andrey.ryoo@qameta.io
+      name: Andrey Ryoo
+    name: allure-testops
+    sources:
+    - https://hub.docker.com/r/allure/allure-ui
+    - https://hub.docker.com/r/allure/allure-uaa
+    - https://hub.docker.com/r/allure/allure-report
+    urls:
+    - https://github.com/qameta/allure-testops-deployment/releases/download/allure-testops-1.2.0/allure-testops-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
     appVersion: 3.190.0
     created: "2022-02-01T18:29:44.41664593Z"
     dependencies:
@@ -147,4 +184,4 @@ entries:
     urls:
     - https://github.com/qameta/allure-testops-deployment/releases/download/allure-testops-0.1.0/allure-testops-0.1.0.tgz
     version: 0.1.0
-generated: "2022-02-01T18:29:44.41666883Z"
+generated: "2022-02-02T16:10:41.681022707Z"
