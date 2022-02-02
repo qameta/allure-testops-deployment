@@ -1,6 +1,6 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ template "allure-testops.report.fullname" . }}
   labels:
@@ -11,8 +11,7 @@ metadata:
     heritage: "{{ .Release.Service }}"
 spec:
   replicas: {{ .Values.report.replicaCount }}
-  strategy:
-{{ toYaml .Values.strategy | indent 4 }}
+  serviceName: {{ template "allure-testops.report.fullname" . }}
   selector:
     matchLabels:
       app: {{ template "allure-testops.report.fullname" . }}
@@ -30,6 +29,7 @@ spec:
         co.elastic.logs/multiline.match: after
         co.elastic.logs/multiline.negate: "true"
     spec:
+      terminationGracePeriodSeconds: 30
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "allure-testops.name" . }}-sa
 {{- end }}

@@ -1,5 +1,5 @@
 ## Override Version
-version: 3.190.0
+version: 3.190.2
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -337,5 +337,5 @@ report:
         periodSeconds: 30
         timeoutSeconds: 5
         successThreshold: 1
-        failureThreshold: 10
+        failureThreshold: 130
         initialDelaySeconds: 60
