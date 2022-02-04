@@ -24,14 +24,22 @@ jobs:
         with:
           version: v3.8.0
 
-      - name: Add Qameta Repo
-        run: |
-          helm repo add --username ${{ secrets.SA_NAME }} --password ${{ secrets.SA_PASS }}  qameta-artifactory https://dl.qameta.io/artifactory/helm
+      - name: "Helm Package"
+        uses: draios/action-helm-tools@v1.0.1
+        with:
+          action: "package"
+        env:
+          CHART_DIR: charts/allure-testops
+          ARTIFACTORY_URL: https://dl.qameta.io/artifactory/helm/
+          ARTIFACTORY_USERNAME: ${{ secrets.SA_NAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.SA_PASS }}
 
-      - name: Install Publish Plugin
-        run: |
-          helm plugin install https://github.com/belitre/helm-push-artifactory-plugin --version v1.0.2
-          
-      - name: Publish Chart
-        run: |
-          helm push-artifactory charts/allure-testops qameta-artifactory --access-token ${{ secrets.SA_ACCESS_TOKEN }} --skip-reindex
+      - name: "Helm publish"
+        uses: draios/action-helm-tools@v1.0.1
+        with:
+          action: "publish"
+        env:
+          CHART_DIR: charts/allure-testops
+          ARTIFACTORY_URL: https://dl.qameta.io/artifactory/helm/
+          ARTIFACTORY_USERNAME: ${{ secrets.SA_NAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.SA_PASS }}
