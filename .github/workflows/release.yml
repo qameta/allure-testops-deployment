@@ -25,7 +25,6 @@ jobs:
           endpoint: https://dl.qameta.io/artifactory/helm
           saUsername: ${{ secrets.SA_NAME }}
           saPass: ${{ secrets.SA_PASS }}
-          accessToken: ${{ secrets.SA_ACCESS_TOKEN }}
+          accessToken: "${{ secrets.SA_ACCESS_TOKEN }}"
           repoName: qameta
           chart: charts/allure-testops
-
