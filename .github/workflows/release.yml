@@ -19,27 +19,12 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Install Helm
-        uses: azure/setup-helm@v1
-        with:
-          version: v3.8.0
-
-      - name: "Helm Package"
-        uses: draios/action-helm-tools@v1.0.1
-        with:
-          action: "package"
-        env:
-          CHART_DIR: charts/allure-testops
-          ARTIFACTORY_URL: https://dl.qameta.io/artifactory/helm/
-          ARTIFACTORY_USERNAME: ${{ secrets.SA_NAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.SA_PASS }}
-
       - name: "Helm publish"
-        uses: draios/action-helm-tools@v1.0.1
+        uses: qameta/artifactory-publisher@v1
         with:
-          action: "publish"
-        env:
-          CHART_DIR: charts/allure-testops
-          ARTIFACTORY_URL: https://dl.qameta.io/artifactory/helm/
-          ARTIFACTORY_USERNAME: ${{ secrets.SA_NAME }}
-          ARTIFACTORY_PASSWORD: ${{ secrets.SA_PASS }}
+          endpoint: https://dl.qameta.io/artifactory/helm
+          saUsername: ${{ secrets.SA_NAME }}
+          saPass: ${{ secrets.SA_PASS }}
+          accessToken: ${{ secrets.SA_ACCESS_TOKEN }}
+          repoName: qameta
+          chart: charts/allure-testops
