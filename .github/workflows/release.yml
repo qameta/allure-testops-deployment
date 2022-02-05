@@ -28,3 +28,4 @@ jobs:
           accessToken: ${{ secrets.SA_ACCESS_TOKEN }}
           repoName: qameta
           chart: charts/allure-testops
+
