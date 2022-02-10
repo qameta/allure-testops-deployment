@@ -157,44 +157,44 @@ spec:
         - name: ALLURE_EE_GATEWAY_SERVICE_PORT
           value: "{{ .Values.gateway.service.port }}"
 {{- if .Values.allure.auth.ldap.enabled }}
-        - name: LDAP_ENABLED
+        - name: ALLURE_LOGIN_LDAP_ENABLED
           value: "{{ .Values.allure.auth.ldap.enabled }}"
-        - name: LDAP_REFERAL
+        - name: ALLURE_LOGIN_LDAP_REFERAL
           value: "{{ .Values.allure.auth.ldap.referal }}"
-        - name: LDAP_USER_DN
+        - name: ALLURE_LOGIN_LDAP_URL
+          value: "{{ .Values.allure.auth.ldap.url }}"
+        - name: ALLURE_LOGIN_LDAP_USERDNPATTERNS
+          value: "{{ .Values.allure.auth.ldap.user.dnPatterns }}"
+        - name: ALLURE_LOGIN_LDAP_USERSEARCHBASE
+          value: "{{ .Values.allure.auth.ldap.user.searchBase }}"
+        - name: ALLURE_LOGIN_LDAP_USERSEARCHFILTER
+          value: "{{ .Values.allure.auth.ldap.user.searchFilter }}"
+        - name: ALLURE_LOGIN_LDAP_GROUPSEARCHBASE
+          value: "{{ .Values.allure.auth.ldap.group.searchBase }}"
+        - name: ALLURE_LOGIN_LDAP_GROUPSEARCHFILTER
+          value: "{{ .Values.allure.auth.ldap.group.searchFilter }}"
+        - name: ALLURE_LOGIN_LDAP_GROUPROLEATTRIBUTE
+          value: "{{ .Values.allure.auth.ldap.group.roleAttribute }}"
+        - name: ALLURE_LOGIN_LDAP_SYNCROLES
+          value: "{{ .Values.allure.auth.ldap.syncRoles }}"
+        - name: ALLURE_LOGIN_LDAP_UIDATTRIBUTE
+          value: "{{ .Values.allure.auth.ldap.uidAttribute }}"
+        - name: ALLURE_LOGIN_LDAP_GROUPAUTHORITIES_ROLEUSERGROUPS
+          value: "{{ .Values.allure.auth.ldap.userGroupName }}"
+        - name: ALLURE_LOGIN_LDAP_GROUPAUTHORITIES_ROLEADMINGROUPS
+          value: "{{ .Values.allure.auth.ldap.adminGroupName }}"
+        - name: ALLURE_LOGIN_LDAP_DEFAULTROLE
+          value: {{ .Values.allure.auth.ldap.defaultRole }}
+        - name: ALLURE_LOGIN_LDAP_USERDN
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: ldapUser
-        - name: LDAP_PASSWORD
+        - name: ALLURE_LOGIN_LDAP_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: ldapPass
-        - name: LDAP_URL
-          value: "{{ .Values.allure.auth.ldap.url }}"
-        - name: LDAP_USER_DN_PATTERNS
-          value: "{{ .Values.allure.auth.ldap.user.dnPatterns }}"
-        - name: LDAP_USER_SEARCH_BASE
-          value: "{{ .Values.allure.auth.ldap.user.searchBase }}"
-        - name: LDAP_USER_SEARCH_FILTER
-          value: "{{ .Values.allure.auth.ldap.user.searchFilter }}"
-        - name: LDAP_GROUP_SEARCH_BASE
-          value: "{{ .Values.allure.auth.ldap.group.searchBase }}"
-        - name: LDAP_GROUP_SEARCH_FILTER
-          value: "{{ .Values.allure.auth.ldap.group.searchFilter }}"
-        - name: LDAP_GROUP_ROLE_ATTRIBUTE
-          value: "{{ .Values.allure.auth.ldap.group.roleAttribute }}"
-        - name: LDAP_SYNC_ROLES
-          value: "{{ .Values.allure.auth.ldap.syncRoles }}"
-        - name: LDAP_UID_ATTRIBUTE
-          value: "{{ .Values.allure.auth.ldap.uidAttribute }}"
-        - name: LDAP_GROUP_AUTHORITIES_ROLE_USER_GROUPS
-          value: "{{ .Values.allure.auth.ldap.userGroupName }}"
-        - name: LDAP_GROUP_AUTHORITIES_ROLE_ADMIN_GROUPS
-          value: "{{ .Values.allure.auth.ldap.adminGroupName }}"
-        - name: LDAP_DEFAULT_ROLE
-          value: {{ .Values.allure.auth.ldap.defaultRole }}
 {{- end }}
 {{- if .Values.uaa.probes.enabled }}
         livenessProbe:

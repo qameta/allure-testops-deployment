@@ -1,5 +1,5 @@
 ## Override Version
-version: 3.190.2
+version: 3.190.4
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -25,8 +25,10 @@ registry:
     username: foo
     password: bar
 
+###
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+###
 rbac:
   enabled: true
   rules:
@@ -43,16 +45,19 @@ rbac:
         - watch
         - list
 
-## AWS Injection
+###
+# AWS Injection
 # Make Sure you have RBAC enabled
 # Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
+###
 aws:
   enabled: false
   accountId: 195700002069 # Your AWS Account ID
   iamRole: s3-bucket-objects # Name of your AWS ROLE allowing reading/writing s3
 
-# Please be careful. Make sure you have no DB migrations with upcoming version. If so change type to Recreate and plan Downtime
-# Also please disable health checks during DB migration
+###
+## Strategy for updating Gateway & UAA components
+###
 strategy:
   type: RollingUpdate
   rollingUpdate:
@@ -67,12 +72,15 @@ network:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-  # Istio Gateway
+  ###
+  ## Istio Gateway
+  ## Prior to deployment, label Namespace with istio-injection=enabled to make Istio inject Envoy Sidecars
   istio:
     enabled: false
     gatewaySelector:
       istio: ingressgateway
-    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru" # makes Allure TestOps accessible from Jira Plugin
+    # makes Allure TestOps accessible from Jira Plugin iFrame
+    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru"
   # TLS Settings
   tls:
     enabled: false
@@ -202,15 +210,16 @@ allure:
         name: Google Auth
         id: foo
         secret: bar
-      redirectURI: 'https://example.com/login/oauth2/code/allure'
-      authMethod: client_secret_post
-      issuerURI: 'https://accounts.google.com'
-      authURI: 'https://accounts.google.com/o/oauth2/v2/auth'
-      tokenURI: 'https://oauth2.googleapis.com/token'
-      userInfoURI: 'https://openidconnect.googleapis.com/v1/userinfo'
-      jwksURI: 'https://www.googleapis.com/oauth2/v1/certs'
-      userNameAttribute: "email"
-      scope: "{openid,email,profile}"
+      redirectURI: https://example.com/login/oauth2/code/allure
+      issuerURI: https://accounts.google.com
+      userNameAttribute: preferred_username
+      scope: openid,email,profile
+      authMethod:
+      authURI:
+      tokenURI:
+      userInfoURI:
+      jwksURI:
+
 
 gateway:
   replicaCount: 1

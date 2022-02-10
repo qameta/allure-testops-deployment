@@ -114,36 +114,46 @@ spec:
         - name: MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE
           value: "{{ .Values.allure.management.cacheTTL }}"
 {{- if .Values.allure.auth.oidc.enabled }}
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_NAME
-          value: "{{ .Values.allure.auth.oidc.client.name }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENTNAME
+          value: {{ .Values.allure.auth.oidc.client.name }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_REDIRECTURI
+          value: {{ .Values.allure.auth.oidc.redirectURI }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_SCOPE
+          value: {{ .Values.allure.auth.oidc.scope }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUERURI
+          value: {{ .Values.allure.auth.oidc.issuerURI }}
+{{- if .Values.allure.auth.oidc.authMethod }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENTAUTHENTICATIONMETHOD
+          value: {{ .Values.allure.auth.oidc.authMethod }}
+{{- end }}
+{{- if .Values.allure.auth.oidc.authURI }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_AUTHORIZATIONURI
+          value: {{ .Values.allure.auth.oidc.authURI }}
+{{- end }}
+{{- if .Values.allure.auth.oidc.tokenURI }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_TOKENURI
+          value: {{ .Values.allure.auth.oidc.tokenURI }}
+{{- end }}
+{{- if .Values.allure.auth.oidc.userInfoURI }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_USERINFOURI
+          value: {{ .Values.allure.auth.oidc.userInfoURI }}
+{{- end }}
+{{- if .Values.allure.auth.oidc.jwksURI }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_JWKSETURI
+          value: {{ .Values.allure.auth.oidc.jwksURI }}
+{{- end }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_USERNAMEATTRIBUTE
+          value: {{ .Values.allure.auth.oidc.userNameAttribute }}
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENTID
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: clientId
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET
+        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENTSECRET
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: clientSecret
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_REDIRECT_URI
-          value: "{{ .Values.allure.auth.oidc.redirectURI }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_AUTHENTICATION_METHOD
-          value: {{ .Values.allure.auth.oidc.authMethod }}
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI
-          value: "{{ .Values.allure.auth.oidc.issuerURI }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_AUTHORIZATION_URI
-          value: "{{ .Values.allure.auth.oidc.authURI }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_TOKEN_URI
-          value: "{{ .Values.allure.auth.oidc.tokenURI }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_USER_INFO_URI
-          value: "{{ .Values.allure.auth.oidc.userInfoURI }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_JWK_SET_URI
-          value: "{{ .Values.allure.auth.oidc.jwksURI }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_USER_NAME_ATTRIBUTE
-          value: "{{ .Values.allure.auth.oidc.userNameAttribute }}"
-        - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_SCOPE
-          value: "{{ .Values.allure.auth.oidc.scope }}"
 {{- end }}
         - name: ALLURE_EE_REPORT_SERVICE_HOST
           value: "{{ template "allure-testops.report.fullname" . }}"
