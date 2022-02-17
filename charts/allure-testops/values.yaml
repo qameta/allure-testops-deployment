@@ -132,6 +132,7 @@ postgresql:
   external:
     active: false
     endpoint: db.example.com
+    port: 5432
     uaaDbName: uaa
     uaaUsername: uaa
     uaaPassword: secret
