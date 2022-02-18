@@ -60,7 +60,7 @@ spec:
           image: postgres:9.6.5
           command: [ 'sh', '-c',
             'until pg_isready -h {{ .Values.postgresql.external.endpoint }} -p {{ .Values.postgresql.external.port }};
-                   do echo waiting for database; sleep 2; done;' ]
+            do echo waiting for database; sleep 2; done;' ]
 {{- end }}
       containers:
       - name: {{ template "allure-testops.report.fullname" . }}

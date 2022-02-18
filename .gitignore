@@ -9,3 +9,4 @@ charts/**/requirements.lock
 # Configs
 configs
 *-internal.yaml
+*-internal-*.yaml
