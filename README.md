@@ -3,7 +3,7 @@
 ### Values Example:
 ```yaml
 ## Override Version
-version: 3.190.0
+version: 3.192.2
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -29,8 +29,10 @@ registry:
     username: foo
     password: bar
 
+###
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+###
 rbac:
   enabled: true
   rules:
@@ -47,16 +49,18 @@ rbac:
         - watch
         - list
 
-## AWS Injection
+###
+# AWS Injection
 # Make Sure you have RBAC enabled
 # Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
+###
 aws:
   enabled: false
-  accountId: 195700002069 # Your AWS Account ID
-  iamRole: s3-bucket-objects # Name of your AWS ROLE allowing reading/writing s3
+  arn: arn:aws:iam::195700002069:role/allure_s3 # Your AWS ARN
 
-# Please be careful. Make sure you have no DB migrations with upcoming version. If so change type to Recreate and plan Downtime
-# Also please disable health checks during DB migration
+###
+## Strategy for updating Gateway & UAA components
+###
 strategy:
   type: RollingUpdate
   rollingUpdate:
@@ -71,12 +75,15 @@ network:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-  # Istio Gateway
+  ###
+  ## Istio Gateway
+  ## Prior to deployment, label Namespace with istio-injection=enabled to make Istio inject Envoy Sidecars
   istio:
     enabled: false
     gatewaySelector:
       istio: ingressgateway
-    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru" # makes Allure TestOps accessible from Jira Plugin
+    # makes Allure TestOps accessible from Jira Plugin iFrame
+    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru"
   # TLS Settings
   tls:
     enabled: false
@@ -128,6 +135,8 @@ postgresql:
   external:
     active: false
     endpoint: db.example.com
+    port: 5432
+    sslMode: prefer
     uaaDbName: uaa
     uaaUsername: uaa
     uaaPassword: secret
@@ -165,6 +174,9 @@ fs:
 
 minio:
   enabled: true
+  #  serviceAccount:
+  #    annotations:
+  #      eks.amazonaws.com/role-arn: arn:aws:iam::195743002069:role/allure_s3
   auth:
     rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
     rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
@@ -174,6 +186,18 @@ minio:
       api: 9000
   defaultBuckets: allure-testops
   defaultRegion: qameta-0
+  gateway:
+    # Turns minio into S3 Proxy. The only way to make Allure Testops work on Azure
+    # Useful for self-hosted Ceph because acting as caching proxy
+    enabled: false
+    type: s3 # Could be azure, gcs, nas, s3 Details @ https://artifacthub.io/packages/helm/bitnami/minio Gateway
+    replicaCount: 1
+    auth:
+      s3:
+        serviceEndpoint: https://s3.amazonaws.com # Any S3 EP except azure, gcs
+        # Note. Don't use these credentials if you run on Amazon AWS. Use ARN instead
+        accessKey: foo
+        secretKey: bar
 
 allure:
   timeZone: "Europe/Moscow"
@@ -218,15 +242,16 @@ allure:
         name: Google Auth
         id: foo
         secret: bar
-      redirectURI: 'https://example.com/login/oauth2/code/allure'
-      authMethod: client_secret_post
-      issuerURI: 'https://accounts.google.com'
-      authURI: 'https://accounts.google.com/o/oauth2/v2/auth'
-      tokenURI: 'https://oauth2.googleapis.com/token'
-      userInfoURI: 'https://openidconnect.googleapis.com/v1/userinfo'
-      jwksURI: 'https://www.googleapis.com/oauth2/v1/certs'
-      userNameAttribute: "email"
-      scope: "{openid,email,profile}"
+      redirectURI: https://example.com/login/oauth2/code/allure
+      issuerURI: https://accounts.google.com
+      userNameAttribute: preferred_username
+      scope: openid,email,profile
+      authMethod:
+      authURI:
+      tokenURI:
+      userInfoURI:
+      jwksURI:
+
 
 gateway:
   replicaCount: 1
@@ -353,6 +378,6 @@ report:
         periodSeconds: 30
         timeoutSeconds: 5
         successThreshold: 1
-        failureThreshold: 10
+        failureThreshold: 130
         initialDelaySeconds: 60
 ```
