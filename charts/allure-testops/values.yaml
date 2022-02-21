@@ -132,6 +132,7 @@ postgresql:
     active: false
     endpoint: db.example.com
     port: 5432
+    sslMode: prefer
     uaaDbName: uaa
     uaaUsername: uaa
     uaaPassword: secret
@@ -168,7 +169,7 @@ fs:
     claimName: ""
 
 minio:
-  enabled: false
+  enabled: true
 #  serviceAccount:
 #    annotations:
 #      eks.amazonaws.com/role-arn: arn:aws:iam::195743002069:role/allure_s3

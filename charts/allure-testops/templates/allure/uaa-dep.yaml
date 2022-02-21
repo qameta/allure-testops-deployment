@@ -78,7 +78,7 @@ spec:
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/uaa"
   {{- else }}
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.uaaDbName }}?assumeMinServerVersion=11&ApplicationName=allure_uaa_service"
+          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.uaaDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}&ApplicationName=allure_uaa_service"
 {{- end }}
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
