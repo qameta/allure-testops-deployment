@@ -71,6 +71,10 @@ spec:
         ports:
         - name: http
           containerPort: 8081
+        command:
+          - /bin/sh
+          - -c
+          - ./entrypoint.sh
         env:
 {{- $secret_name := include "allure-ee.fullname" . }}
         - name: ALLURE_ENDPOINT
@@ -93,7 +97,7 @@ spec:
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report"
 {{- else }}
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.reportDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}&ApplicationName=allure_report_service"
+          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.reportDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
 {{- end }}
 {{- if eq .Values.fs.type "S3" }}
 {{- if .Values.fs.external }}
@@ -212,6 +216,14 @@ spec:
           value: "{{ template "allure-testops.gateway.fullname" . }}"
         - name: ALLURE_EE_GATEWAY_SERVICE_PORT
           value: "{{ .Values.gateway.service.port }}"
+{{- if eq .Values.postgresql.external.sslMode "require" }}
+        - name: TLS_DB_ENDPOINTS
+          value: "{{ .Values.postgresql.external.endpoint}}:{{ .Values.postgresql.external.port }}"
+{{- end }}
+{{- if .Values.certificates.endpoints }}
+        - name: TLS_ENDPOINTS
+          value: "{{ .Values.certificates.endpoints }}"
+{{- end }}
 {{- if .Values.report.probes.enabled }}
         livenessProbe:
           httpGet:
@@ -228,12 +240,21 @@ spec:
         resources:
 {{ toYaml . | indent 10 }}
 {{- end }}
-{{- if eq .Values.fs.type "NFS" }}
         volumeMounts:
+{{- if eq .Values.fs.type "NFS" }}
           - mountPath: .Values.fs.mountPoint
             name: storage
+{{- end }}
+          - name: entrypoint
+            mountPath: /entrypoint.sh
+            subPath: entrypoint.sh
       volumes:
+{{- if eq .Values.fs.type "NFS" }}
         - name: storage
           persistentVolumeClaim:
             claimName: {{ .Values.fs.pvc.claimName }}
 {{- end }}
+        - name: entrypoint
+          configMap:
+            name: {{ template "allure-testops.report.fullname" . }}
+            defaultMode: 0777

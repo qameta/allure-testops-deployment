@@ -64,6 +64,10 @@ spec:
         - name: http
           containerPort: 8082
 {{- $secret_name := include "allure-ee.fullname" . }}
+        command:
+          - /bin/sh
+          - -c
+          - ./entrypoint.sh
         env:
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
@@ -78,7 +82,7 @@ spec:
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/uaa"
   {{- else }}
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.uaaDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}&ApplicationName=allure_uaa_service"
+          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.uaaDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
 {{- end }}
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
@@ -108,12 +112,12 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
-              key: "uaaDbUser"
+              key: uaaDbUser
         - name: SPRING_DATASOURCE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
-              key: "uaaDbPass"
+              key: uaaDbPass
         - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
           value: "org.postgresql.Driver"
         - name: SPRING_JPA_DATABASE_PLATFORM
@@ -196,6 +200,10 @@ spec:
               name: {{ $secret_name }}
               key: ldapPass
 {{- end }}
+{{- if eq .Values.postgresql.external.sslMode "require" }}
+        - name: TLS_DB_ENDPOINTS
+          value: "{{ .Values.postgresql.external.endpoint}}:{{ .Values.postgresql.external.port }}"
+{{- end }}
 {{- if .Values.uaa.probes.enabled }}
         livenessProbe:
           httpGet:
@@ -212,3 +220,12 @@ spec:
         resources:
 {{ toYaml . | indent 10 }}
 {{- end }}
+        volumeMounts:
+          - name: entrypoint
+            mountPath: /entrypoint.sh
+            subPath: entrypoint.sh
+      volumes:
+        - name: entrypoint
+          configMap:
+            name: {{ template "allure-testops.uaa.fullname" . }}
+            defaultMode: 0777
