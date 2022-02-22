@@ -9,13 +9,19 @@ data:
     set -e
     apk update
     apk add openssl
-    for i in $(echo $TLS_ENDPOINTS | sed "s/,/ /g"); do
-      openssl s_client -showcerts -verify 5 -connect $i -servername ${i%%:*} < /dev/null 2> /dev/null | awk '/BEGIN/,/END/{ if(/BEGIN/){a++}; print}' > ${i%%:*}.cer
-    done
-    for e in $(echo $TLS_DB_ENDPOINTS | sed "s/,/ /g"); do
-      openssl s_client -starttls postgres -connect $e -showcerts -verify 5 < /dev/null 2> /dev/null | awk '/BEGIN/,/END/{ if(/BEGIN/){a++}; print}' > ${e%%:*}.cer
-    done
-    for cert in *.cer; do
-      keytool -alias ${cert%%.cer} -import -keystore /opt/java/openjdk/lib/security/cacerts -file $cert -storepass changeit -noprompt
-    done
+    if [ -z "${TLS_ENDPOINTS}" ]; then
+      for i in $(echo $TLS_ENDPOINTS | sed "s/,/ /g"); do
+        openssl s_client -showcerts -verify 5 -connect $i -servername ${i%%:*} < /dev/null 2> /dev/null | awk '/BEGIN/,/END/{ if(/BEGIN/){a++}; print}' > ${i%%:*}.cer
+      done
+    fi
+    if [-z "${TLS_DB_ENDPOINTS}" ]; then
+      for e in $(echo $TLS_DB_ENDPOINTS | sed "s/,/ /g"); do
+        openssl s_client -starttls postgres -connect $e -showcerts -verify 5 < /dev/null 2> /dev/null | awk '/BEGIN/,/END/{ if(/BEGIN/){a++}; print}' > ${e%%:*}.cer
+      done
+    fi
+    if [ ! -z "${TLS_ENDPOINTS}" ] || [ ! -z "${TLS_DB_ENDPOINTS}" ]; then
+      for cert in *.cer; do
+        keytool -alias ${cert%%.cer} -import -keystore /opt/java/openjdk/lib/security/cacerts -file $cert -storepass changeit -noprompt
+      done
+    fi
     java -Djava.security.egd=file:/dev/./urandom -cp /app:/app/lib/* io.qameta.allure.report.ReportApplication
