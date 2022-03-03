@@ -192,6 +192,8 @@ spec:
           value: "{{ .Values.allure.logging }}"
         - name: SPRING_PROFILES_ACTIVE
           value: kubernetes
+        - name: MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED
+          value: 'true'
         - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
           value: "{{ .Values.allure.management.expose }}"
         - name: MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE
