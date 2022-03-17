@@ -27,6 +27,7 @@ jobs:
           ARTIFACTORY_URL: https://dl.qameta.io:443/artifactory/helm/
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USER }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASS }}
+          CHART_VERSION: 3.193.0
       - name: "Helm publish"
         uses: draios/action-helm-tools@v1.0.1
         with:
@@ -36,3 +37,4 @@ jobs:
           ARTIFACTORY_URL: https://dl.qameta.io:443/artifactory/helm/
           ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USER }}
           ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASS }}
+          CHART_VERSION: 3.193.0
