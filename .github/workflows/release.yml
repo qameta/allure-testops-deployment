@@ -22,6 +22,8 @@ jobs:
         uses: qameta/artifactory-publisher@v1
         with:
           endpoint: https://dl.qameta.io:443/artifactory/helm/
-          accessToken: "${{ secrets.SA_ACCESS_TOKEN }}"
-          repoName: qameta
+          username: ${{ secrets.ARTIFACTORY_USER }}
+          password: ${{ secrets.ARTIFACTORY_PASS }}
+          repoName: allure-testops
           chart: charts/allure-testops
+          version: 3.193.0
