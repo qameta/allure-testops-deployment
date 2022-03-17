@@ -14,16 +14,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
       - name: "Helm publish"
-        uses: qameta/artifactory-publisher@v1
-        with:
-          endpoint: https://dl.qameta.io/artifactory/helm
-          accessToken: "${{ secrets.SA_ACCESS_TOKEN }}"
-          repoName: qameta
-          chart: charts/allure-testops
+          uses: mbovo/action-helm-tools@v1.0.0
+          with:
+            action: "push"
+          env:
+            CHART_DIR: charts/allure-testops
+            ARTIFACTORY_URL: https://dl.qameta.io:443/artifactory/helm/
+            ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USER }}
+            ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASS }}
