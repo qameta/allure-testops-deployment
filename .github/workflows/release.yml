@@ -19,11 +19,11 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: "Helm publish"
-          uses: mbovo/action-helm-tools@v1.0.0
-          with:
-            action: "push"
-          env:
-            CHART_DIR: charts/allure-testops
-            ARTIFACTORY_URL: https://dl.qameta.io:443/artifactory/helm/
-            ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USER }}
-            ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASS }}
+        uses: mbovo/action-helm-tools@v1.0.0
+        with:
+          action: "push"
+        env:
+          CHART_DIR: charts/allure-testops
+          ARTIFACTORY_URL: https://dl.qameta.io:443/artifactory/helm/
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USER }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASS }}
