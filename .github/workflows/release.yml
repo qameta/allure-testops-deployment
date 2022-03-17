@@ -18,6 +18,15 @@ jobs:
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - name: "Helm Package"
+        uses: draios/action-helm-tools@v1.0.1
+        with:
+          action: "package"
+        env:
+          CHART_DIR: charts/allure-testops
+          ARTIFACTORY_URL: https://dl.qameta.io:443/artifactory/helm/
+          ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USER }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASS }}
       - name: "Helm publish"
         uses: draios/action-helm-tools@v1.0.1
         with:
