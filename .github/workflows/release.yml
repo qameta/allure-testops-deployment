@@ -19,7 +19,7 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       - name: "Helm publish"
-        uses: mbovo/action-helm-tools@v1.0.0
+        uses: draios/action-helm-tools@v1.0.1
         with:
           action: "push"
         env:
