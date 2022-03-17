@@ -21,7 +21,7 @@ jobs:
       - name: "Helm publish"
         uses: draios/action-helm-tools@v1.0.1
         with:
-          action: "push"
+          action: "publish"
         env:
           CHART_DIR: charts/allure-testops
           ARTIFACTORY_URL: https://dl.qameta.io:443/artifactory/helm/
