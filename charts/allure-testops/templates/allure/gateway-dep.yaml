@@ -53,6 +53,7 @@ spec:
         imagePullPolicy: {{ .Values.registry.pullPolicy }}
         securityContext:
           runAsUser: {{ .Values.runAsUser }}
+          privileged: true
         ports:
         - name: http
           containerPort: {{ .Values.gateway.service.port }}
