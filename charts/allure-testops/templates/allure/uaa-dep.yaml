@@ -220,12 +220,3 @@ spec:
         resources:
 {{ toYaml . | indent 10 }}
 {{- end }}
-        volumeMounts:
-          - name: entrypoint
-            mountPath: /entrypoint.sh
-            subPath: entrypoint.sh
-      volumes:
-        - name: entrypoint
-          configMap:
-            name: {{ template "allure-testops.uaa.fullname" . }}
-            defaultMode: 0777

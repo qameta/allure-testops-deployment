@@ -247,16 +247,10 @@ spec:
           - mountPath: .Values.fs.mountPoint
             name: storage
 {{- end }}
-          - name: entrypoint
-            mountPath: /entrypoint.sh
-            subPath: entrypoint.sh
       volumes:
 {{- if eq .Values.fs.type "NFS" }}
         - name: storage
           persistentVolumeClaim:
             claimName: {{ .Values.fs.pvc.claimName }}
 {{- end }}
-        - name: entrypoint
-          configMap:
-            name: {{ template "allure-testops.report.fullname" . }}
-            defaultMode: 0777
+
