@@ -1,0 +1,55 @@
+{{- if .Values.monitoring.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "allure-testops.gateway.fullname" . }}-monitor
+  labels:
+    app: {{ template "allure-testops.gateway.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "allure-testops.gateway.fullname" . }}
+      version: v1
+  endpoints:
+    - port: http
+      path: "/management/prometheus"
+      interval: 10s
+      honorLabels: true
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "allure-testops.uaa.fullname" . }}-monitor
+  labels:
+    app: {{ template "allure-testops.uaa.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "allure-testops.uaa.fullname" . }}
+      version: v1
+  endpoints:
+    - port: http
+      path: "{{ .Values.allure.uaaContextPath }}management/prometheus"
+      interval: 10s
+      honorLabels: true
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "allure-testops.report.fullname" . }}-monitor
+  labels:
+    app: {{ template "allure-testops.report.fullname" . }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "allure-testops.report.fullname" . }}
+      version: v1
+  endpoints:
+    - port: http
+      path: "{{ .Values.allure.reportContextPath }}management/prometheus"
+      interval: 10s
+      honorLabels: true
+{{- end }}

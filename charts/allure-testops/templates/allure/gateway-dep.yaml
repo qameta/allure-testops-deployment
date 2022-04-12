@@ -23,9 +23,6 @@ spec:
         app: {{ template "allure-testops.gateway.fullname" . }}
         version: v1
       annotations:
-        prometheus.io/path: /management/prometheus
-        prometheus.io/port: "{{ .Values.gateway.service.port }}"
-        prometheus.io/scrape: "true"
         co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
         co.elastic.logs/multiline.match: after
         co.elastic.logs/multiline.negate: "true"

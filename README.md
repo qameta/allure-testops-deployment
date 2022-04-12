@@ -386,4 +386,8 @@ report:
         successThreshold: 1
         failureThreshold: 130
         initialDelaySeconds: 60
+
+# Before enabling monitoring make sure you have Prometheus & Prometheus Operator Installed
+monitoring:
+  enabled: false
 ```
