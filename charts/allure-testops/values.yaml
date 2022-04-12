@@ -169,11 +169,11 @@ fs:
     claimName: ""
 
 minio:
+  enabled: true
   persistence:
     enabled: true
     storageClass: ""
     size: 200Gi
-  enabled: true
 #  serviceAccount:
 #    annotations:
 #      eks.amazonaws.com/role-arn: arn:aws:iam::195743002069:role/allure_s3
