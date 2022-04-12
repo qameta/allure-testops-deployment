@@ -68,10 +68,6 @@ spec:
         ports:
         - name: http
           containerPort: 8081
-        command:
-          - /bin/sh
-          - -c
-          - ./entrypoint.sh
         env:
 {{- $secret_name := include "allure-ee.fullname" . }}
         - name: ALLURE_ENDPOINT
@@ -80,7 +76,7 @@ spec:
 {{- else }}
           value: "http://{{ .Values.host }}"
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: "http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json"
+          value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
 {{- end }}
 {{- if .Values.rabbitmq.external.enabled }}
         - name: SPRING_RABBITMQ_HOST

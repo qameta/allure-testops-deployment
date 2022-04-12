@@ -61,10 +61,6 @@ spec:
         - name: http
           containerPort: 8082
 {{- $secret_name := include "allure-ee.fullname" . }}
-        command:
-          - /bin/sh
-          - -c
-          - ./entrypoint.sh
         env:
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
@@ -72,7 +68,7 @@ spec:
 {{- else }}
           value: "http://{{ .Values.host }}"
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: "http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json"
+          value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
 {{- end }}
 {{- if not .Values.postgresql.external.active }}
         - name: SPRING_DATASOURCE_URL

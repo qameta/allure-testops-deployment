@@ -55,7 +55,7 @@ spec:
           containerPort: {{ .Values.gateway.service.port }}
         env:
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: "http://{{ template "allure-testops.uaa.fullname" . }}:{{ .Values.uaa.service.port }}{{ .Values.allure.uaaContextPath }}.well-known/jwks.json"
+          value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
 {{- range $name, $value := .Values.gateway.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
