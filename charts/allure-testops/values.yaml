@@ -169,6 +169,10 @@ fs:
     claimName: ""
 
 minio:
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 200Gi
   enabled: true
 #  serviceAccount:
 #    annotations:
