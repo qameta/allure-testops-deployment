@@ -3,7 +3,7 @@
 ### Values Example:
 ```yaml
 ## Override Version
-version: 3.192.2
+version: 3.193.0
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
