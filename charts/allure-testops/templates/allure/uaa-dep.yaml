@@ -139,8 +139,6 @@ spec:
           value: "false"
         - name: SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED
           value: "false"
-        - name: ALLURE_LOGIN_PRIMARY
-          value: {{ .Values.allure.auth.primary }}
         - name: ALLURE_EE_REPORT_SERVICE_HOST
           value: "{{ template "allure-testops.report.fullname" . }}"
         - name: ALLURE_EE_REPORT_SERVICE_PORT
@@ -153,6 +151,8 @@ spec:
           value: "{{ template "allure-testops.gateway.fullname" . }}"
         - name: ALLURE_EE_GATEWAY_SERVICE_PORT
           value: "{{ .Values.gateway.service.port }}"
+        - name: ALLURE_LOGIN_PRIMARY
+          value: {{ .Values.allure.auth.primary }}
 {{- if .Values.allure.auth.ldap.enabled }}
         - name: ALLURE_LOGIN_LDAP_ENABLED
           value: "{{ .Values.allure.auth.ldap.enabled }}"

@@ -30,7 +30,7 @@ spec:
                   number: {{ .Values.gateway.service.port }}
 {{- if .Values.network.tls.enabled }}
   tls:
-    - secretName: {{ template "allure-ee.fullname" . }}
+    - secretName: {{ .Values.network.tls.secretName }}
       hosts:
         - {{ .Values.host . }}
 {{- end -}}
