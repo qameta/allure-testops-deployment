@@ -26,4 +26,4 @@ jobs:
           password: ${{ secrets.ARTIFACTORY_PASS }}
           repoName: allure-testops
           chart: charts/allure-testops
-          version: 3.193.0
+          version: 3.193.1
