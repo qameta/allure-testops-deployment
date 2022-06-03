@@ -1,58 +1,50 @@
 ## Override Version
-version: 3.193.1
+version: 4.0.2
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
 password: admin
 
 ## Security Context
+## 65534 started by a user with lowest privilegies
 runAsUser: 65534
 
 ## your-domain.tld
-host: localhost
+## the real DNS name (FQDN) of the allure testops instance
+host: alure.host.name
 
 ## Registry Auth. Access to registry secrets can be obtained from QAMeta team
 registry:
   # Private registry or Proxy like Nexus
   enabled: false
   # Registry Domain like quay.io / docker.io / ghcr.io / ...
+  # registry to pull images from
+  # default is docker.io
   repo: docker.io
   # Prefix with registry name
+  # slug for the registry, i.e. 'docker' for dl.qameta.io
   name: allure
+  # name of registry secret
   imagePullSecret: qameta-secret
   pullPolicy: IfNotPresent
   auth:
+    # provided by Qameta Software
+    # by default qametaaccess as username and random password provided by sales
     username: foo
     password: bar
 
-###
-## Role Based Access Control
-## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
-###
-rbac:
-  enabled: true
-  rules:
-    - apiGroups:
-        - ''
-      resources:
-        - endpoints
-        - services
-        - pods
-        - configmaps
-        - secrets
-      verbs:
-        - get
-        - watch
-        - list
 
 ###
-# AWS Injection
+# AWS Injection (STS)
 # Make Sure you have RBAC enabled
 # Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
 ###
 aws:
+  # This is to be updated to 'true', otherwise will be ignored
   enabled: false
-  arn: arn:aws:iam::195700002069:role/allure_s3 # Your AWS ARN
+  # Your AWS ARN 
+  # Update this values with your real value of your Amazon Role
+  arn: arn:aws:iam::195700002069:role/allure_s3 
 
 ###
 ## Strategy for updating Gateway & UAA components
@@ -65,23 +57,29 @@ strategy:
 network:
   # Nginx Ingress
   ingress:
+    # Update if you are using nginx as ingress controller
     enabled: false
     className:
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+      nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+
   ###
   ## Istio Gateway
   ## Prior to deployment, label Namespace with istio-injection=enabled to make Istio inject Envoy Sidecars
   istio:
+    # To be enabled (set to true) if you are using istio
     enabled: false
     gatewaySelector:
       istio: ingressgateway
     # makes Allure TestOps accessible from Jira Plugin iFrame
-    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru"
+    # Update this with real Jira instance URL
+    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.com"
+
   # TLS Settings
   tls:
+    # to be set to 'true' if SSL is to be used for your deployment
     enabled: false
     secretName: allure-tls # Secret with SSL termination secrets.
     hstsEnabled: false
@@ -89,6 +87,7 @@ network:
   # install from https://cert-manager.io/docs/installation/ and create ClusterIssuer
   # and provide Challenge type e.g. acme http-01 or dns-01
   certmanager:
+    # To be set to 'true' if a certification manager to be used for the deployment
     enabled: false
     # It is important where certificate is located depending on your Ingress/Istio Gateway
     # IstioGateway require secrets with tls certs to be located in istio-system ns
@@ -99,7 +98,7 @@ network:
 
 # Redis Config
 redis:
-  # Set Disabled if you have external Redis
+  # Set to 'false' if you have Redis deployed in your infrastructure and you are allowed to use it with Allure TestOps
   enabled: true
   # External Redis Host
   host: redis.example.com
@@ -113,12 +112,17 @@ redis:
 
 # RabbitMQ Config
 rabbitmq:
+  # Update to 'false' if you have RabbitMQ deployed in your infrastructure and you are allowed to use it with Allure TestOps
+  # If set to 'true', then Helm chart will deploy RabbitMQ
   enabled: true
   external:
+    # Update to 'true' if you are going to use dedicated RabbitMQ server from existing infrastructure
     enabled: false
     host: mq.example.com
   auth:
-    erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx # Set your own random string
+    # If you have dedicated RabbitMQ server, then take this value from dedicated RabbitMQ settings
+    # Otherwise set to your own random string
+    erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx 
     username: allure
     password: allure
   resources: {}
@@ -390,3 +394,23 @@ report:
 # Before enabling monitoring make sure you have Prometheus & Prometheus Operator Installed
 monitoring:
   enabled: false
+
+### Always leave it as it is
+## Role Based Access Control
+## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+###
+rbac:
+  enabled: true
+  rules:
+    - apiGroups:
+        - ''
+      resources:
+        - endpoints
+        - services
+        - pods
+        - configmaps
+        - secrets
+      verbs:
+        - get
+        - watch
+        - list
