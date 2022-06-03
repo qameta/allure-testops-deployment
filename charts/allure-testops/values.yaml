@@ -116,7 +116,7 @@ rabbitmq:
   enabled: true
   external:
     enabled: false
-    host: mq.example.com
+  host: mq.example.com
   auth:
     erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx # Set your own random string
     username: allure
