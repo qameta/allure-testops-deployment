@@ -112,27 +112,29 @@ redis:
 
 # RabbitMQ Config
 rabbitmq:
-  # Update to 'false' if you have RabbitMQ deployed in your infrastructure and you are allowed to use it with Allure TestOps
   # If set to 'true', then Helm chart will deploy RabbitMQ
+  # Update to 'false' if you have RabbitMQ deployed in your infrastructure and you are allowed to use it with Allure TestOps
   enabled: true
-  external:
-    # Update to 'true' if you are going to use dedicated RabbitMQ server from existing infrastructure
-    enabled: false
-    host: mq.example.com
+  host: mq.example.com
   auth:
     # If you have dedicated RabbitMQ server, then take this value from dedicated RabbitMQ settings
     # Otherwise set to your own random string
-    erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx 
+    erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx
+    # Credentials for RabbitMQ
     username: allure
     password: allure
   resources: {}
 
 postgresql:
+  # If enabled ('true'), then Helm chart will deploy PostgreSQL database as part of the deployment
+  # If set to 'false' the deployment will use dedicated PostgreSQL database server deployed in your infrastructure
   enabled: true
   connectionTimeout: 60000
   postgresqlUsername: allure
   postgresqlPassword: allure
   external:
+    # If set to 'true' the deployment will use dedicated PostgreSQL database server deployed in your infrastructure
+    # with the parameter described below:
     active: false
     endpoint: db.example.com
     port: 5432
