@@ -114,8 +114,6 @@ redis:
 # RabbitMQ Config
 rabbitmq:
   enabled: true
-  external:
-    enabled: false
   host: mq.example.com
   auth:
     erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx # Set your own random string
@@ -129,7 +127,6 @@ postgresql:
   postgresqlUsername: allure
   postgresqlPassword: allure
   external:
-    active: false
     endpoint: db.example.com
     port: 5432
     sslMode: prefer

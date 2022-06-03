@@ -85,7 +85,7 @@ spec:
         - name: SPRING_RABBITMQ_HOST
           value: "{{ .Values.rabbitmq.host }}"
 {{- end }}
-{{- if not .Values.postgresql.external.active }}
+{{- if .Values.postgresql.enabled }}
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report"
 {{- else }}
