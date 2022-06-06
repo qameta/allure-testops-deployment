@@ -122,9 +122,6 @@ postgresql:
   postgresqlUsername: allure
   postgresqlPassword: allure
   external:
-    # If set to 'true' the deployment will use dedicated PostgreSQL database server deployed in your infrastructure
-    # with the parameter described below:
-    active: false
     endpoint: db.example.com
     port: 5432
     sslMode: prefer

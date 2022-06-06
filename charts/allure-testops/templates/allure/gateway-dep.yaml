@@ -77,7 +77,7 @@ spec:
           value: "{{ template "allure-testops.redis.fullname" . }}"
 {{- else }}
         - name: SPRING_REDIS_HOST
-          value: "{{ .Values.redis.host }} }"
+          value: "{{ .Values.redis.host }}"
 {{- end }}
         - name: SPRING_REDIS_PASSWORD
           valueFrom:

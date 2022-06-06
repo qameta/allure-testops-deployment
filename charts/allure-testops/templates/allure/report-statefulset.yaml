@@ -78,14 +78,14 @@ spec:
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
           value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
 {{- end }}
-{{- if .Values.rabbitmq.external.enabled }}
-        - name: SPRING_RABBITMQ_HOST
-          value: "{{ .Values.rabbitmq.external.host }}"
-{{- else }}
+{{- if .Values.rabbitmq.enabled }}
         - name: SPRING_RABBITMQ_HOST
           value: "{{ template "allure-testops.rabbitmq.fullname" . }}"
+{{- else }}
+        - name: SPRING_RABBITMQ_HOST
+          value: "{{ .Values.rabbitmq.host }}"
 {{- end }}
-{{- if not .Values.postgresql.external.active }}
+{{- if .Values.postgresql.enabled }}
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report"
 {{- else }}
