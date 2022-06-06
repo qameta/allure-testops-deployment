@@ -69,7 +69,7 @@ spec:
         - name: http
           containerPort: 8081
         env:
-{{- $secret_name := include "allure-ee.fullname" . }}
+{{- $secret_name := include "allure-testops.secret.name" . }}
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
           value: "https://{{ .Values.host }}"

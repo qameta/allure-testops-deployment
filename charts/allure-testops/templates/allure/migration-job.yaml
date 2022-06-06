@@ -31,7 +31,7 @@ spec:
               value: http://{{ template "allure-testops.minio.fullname" . }}
             - name: MINIO_SERVER_PORT_NUMBER
               value: {{ .Values.minio.service.ports.api }}
-{{- $secret_name := include "allure-ee.fullname" . }}
+{{- $secret_name := include "allure-testops.secret.name" . }}
             - name: MINIO_SERVER_ACCESS_KEY
               valueFrom:
                 secretKeyRef:

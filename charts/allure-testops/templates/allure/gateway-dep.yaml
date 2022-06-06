@@ -60,7 +60,7 @@ spec:
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
 {{- end }}
-{{- $secret_name := include "allure-ee.fullname" . }}
+{{- $secret_name := include "allure-testops.secret.name" . }}
 {{- if .Values.redis.sentinel.enabled }}
         - name: SPRING_REDIS_SENTINEL_NODES
           value: "{{ .Values.redis.sentinel.nodes }}"
