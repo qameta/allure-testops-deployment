@@ -34,17 +34,6 @@ registry:
     password: bar
 
 
-###
-# AWS Injection (STS)
-# Make Sure you have RBAC enabled
-# Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
-###
-aws:
-  # This is to be updated to 'true', otherwise will be ignored
-  enabled: false
-  # Your AWS ARN 
-  # Update this values with your real value of your Amazon Role
-  arn: arn:aws:iam::195700002069:role/allure_s3 
 
 ###
 ## Strategy for updating Gateway & UAA components
@@ -145,6 +134,7 @@ postgresql:
     reportDbName: report
     reportUsername: report
     reportPassword: secret
+  # this works for postgres in the pod only. For external DB you need to exeute these manually when creating the databases
   initdbScripts:
     init.sql: |
       CREATE DATABASE uaa TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
@@ -159,30 +149,47 @@ fs:
   external: false
   pathstyle: true
   migration:
+    # should be false all the time except the 1 migration from FS to S3
     enabled: false
+    # for FS only
     directory: /opt/allure/report/storage
   s3:
+    # the URL should be like https://region.s3.amazonaws.com if your region is not us-east-1
     endpoint: https://s3.amazonaws.com
     bucket: allure-testops
-    region: eu-central-1
+    region: us-east-1
     # If you run Allure Testops in AWS EKS you don't need stating accessKey & secretKey
     accessKey: foo
     secretKey: bar
   # Required only if type is Local or NFS
   mountPoint: /storage
   # Create NFS Volume First as PV
+  # needed for migration purposes only, do not change it if you are not migratung the data from PVC
   pvc:
     claimName: ""
+
+###
+# AWS Injection (STS)
+# Make Sure you have RBAC enabled
+# Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
+###
+aws:
+  # This is to be updated to 'true', otherwise will be ignored
+  enabled: false
+  # Your AWS ARN 
+  # Update this values with your real value of your Amazon Role
+  arn: arn:aws:iam::195700002069:role/allure_s3 
+
+
 
 minio:
   enabled: true
   persistence:
     enabled: true
+    # 
     storageClass: ""
     size: 200Gi
-#  serviceAccount:
-#    annotations:
-#      eks.amazonaws.com/role-arn: arn:aws:iam::195743002069:role/allure_s3
+
   auth:
     rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
     rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
@@ -212,8 +219,10 @@ certificates:
   endpoints:
 
 allure:
-  timeZone: "Europe/Moscow"
+  # Upldate your time zone accordingly to the real settings of your server env
+  timeZone: "Europe/London"
   sessionLifespan: 57600
+  # Cookies settings as http-only. Needed to be enabled if you are using HTTP instead of HTTPS to access Allure TestOps UI
   httpOnly: "true"
   logging: warn
   management:
