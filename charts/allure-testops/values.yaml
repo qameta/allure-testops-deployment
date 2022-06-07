@@ -43,6 +43,15 @@ strategy:
   rollingUpdate:
     maxUnavailable: 0
 
+###
+# Skip Kubernetes secret creation. It is for cases when Secret is created and managed by external means, for example using external-secrets
+# Do not enable unless you know what you're doing.
+###
+externalSecrets:
+  enabled: true
+# Provide a custom name for externally-provided Secret
+#  name: ""
+
 network:
   # Nginx Ingress
   ingress:

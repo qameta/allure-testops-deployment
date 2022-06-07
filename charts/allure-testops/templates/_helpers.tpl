@@ -71,11 +71,29 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
-Create a default fully qualified postgresql name.
+Create a default fully qualified redis name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "allure-testops.redis.fullname" -}}
 {{- printf "%s-%s" .Release.Name "redis-master" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Determine a secret name, either external or managed by this chart
+*/}}
+{{- define "allure-testops.secret.name" -}}
+{{- if not .Values.externalSecrets.enabled }}
+  {{- $secret_name := include "allure-ee.fullname" . }}
+  {{- printf $secret_name }}
+{{- else }}
+  {{- if .Values.externalSecrets.name }}
+    {{- $secret_name := .Values.externalSecrets.name }}
+    {{- printf $secret_name }}
+  {{- else }}
+    {{- $secret_name := include "allure-ee.fullname" . }}
+    {{- printf $secret_name }}
+  {{- end }}
+{{- end }}
 {{- end -}}
 
 {{- define "imagePullSecret" }}
