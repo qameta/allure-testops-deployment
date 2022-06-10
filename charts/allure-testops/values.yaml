@@ -1,5 +1,5 @@
 ## Override Version
-version: 4.0.2
+version: 4.1.0
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
