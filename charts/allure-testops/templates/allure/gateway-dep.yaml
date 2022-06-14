@@ -152,6 +152,10 @@ spec:
               name: {{ $secret_name }}
               key: clientSecret
 {{- end }}
+{{- if .Values.certificates.endpoints }}
+        - name: TLS_ENDPOINTS
+          value: "{{ .Values.certificates.endpoints }}"
+{{- end }}
         - name: ALLURE_EE_REPORT_SERVICE_HOST
           value: "{{ template "allure-testops.report.fullname" . }}"
         - name: ALLURE_EE_REPORT_SERVICE_PORT

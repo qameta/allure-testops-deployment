@@ -73,9 +73,13 @@ spec:
 {{- if .Values.postgresql.enabled }}
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/uaa"
-  {{- else }}
+{{- else }}
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.uaaDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
+{{- end }}
+{{- if .Values.certificates.endpoints }}
+        - name: TLS_ENDPOINTS
+          value: "{{ .Values.certificates.endpoints }}"
 {{- end }}
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
