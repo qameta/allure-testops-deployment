@@ -10,3 +10,4 @@ charts/**/requirements.lock
 configs
 *-internal.yaml
 *-internal-*.yaml
+*-local.yaml

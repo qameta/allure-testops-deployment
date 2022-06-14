@@ -107,6 +107,10 @@ redis:
     enabled: false
     masterSet: big_master
     nodes: []
+  master:
+    podLabels:
+      app: redis
+      version: v1
 
 # RabbitMQ Config
 rabbitmq:
@@ -128,8 +132,9 @@ postgresql:
   # If set to 'false' the deployment will use dedicated PostgreSQL database server deployed in your infrastructure
   enabled: true
   connectionTimeout: 60000
-  postgresqlUsername: allure
-  postgresqlPassword: allure
+  auth:
+    username: allure
+    password: allure
   external:
     endpoint: db.example.com
     port: 5432
@@ -141,10 +146,12 @@ postgresql:
     reportUsername: report
     reportPassword: secret
   # this works for postgres in the pod only. For external DB you need to exeute these manually when creating the databases
-  initdbScripts:
-    init.sql: |
-      CREATE DATABASE uaa TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
-      CREATE DATABASE report TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+  primary:
+    initdb:
+      scripts:
+        init.sql: |
+          CREATE DATABASE uaa TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+          CREATE DATABASE report TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
   persistence:
     size: 20Gi
 
@@ -192,7 +199,6 @@ minio:
   enabled: true
   persistence:
     enabled: true
-    # 
     storageClass: ""
     size: 200Gi
 
