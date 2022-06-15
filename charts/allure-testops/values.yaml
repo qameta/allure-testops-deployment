@@ -231,6 +231,10 @@ certificates:
   endpoints:
 
 allure:
+  # Allows unregistered users to register
+  registrationEnabled: true
+  # Lets users bypass admin's registration approval
+  autoApprove: true
   # Upldate your time zone accordingly to the real settings of your server env
   timeZone: "Europe/London"
   sessionLifespan: 57600
