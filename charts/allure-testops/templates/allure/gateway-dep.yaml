@@ -95,7 +95,7 @@ spec:
         - name: SPRING_OUTPUT_ANSI_ENABLED
           value: "never"
         - name: ALLURE_SECURE
-          value: "{{ .Values.allure.httpOnly }}"
+          value: "{{ .Values.allure.secureCookies }}"
         - name: TZ
           value: "{{ .Values.allure.timeZone }}"
         - name: LOGGING_LEVEL_IO_QAMETA_ALLURE

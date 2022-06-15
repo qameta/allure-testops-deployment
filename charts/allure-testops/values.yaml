@@ -238,8 +238,9 @@ allure:
   # Upldate your time zone accordingly to the real settings of your server env
   timeZone: "Europe/London"
   sessionLifespan: 57600
-  # Cookies settings as http-only. Needed to be enabled if you are using HTTP instead of HTTPS to access Allure TestOps UI
-  httpOnly: "true"
+  # Update secureCookies
+  # Cookies settings as http-only. Needs to be set to "true" if you are using HTTPS, and set to "false" if HTTP is used to access Allure TestOps UI
+  secureCookies: "true"
   logging: warn
   management:
     # Endpoints to expose e.g. for Prometheus, HealthChecks etc.
