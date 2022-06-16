@@ -1,393 +1,44 @@
-# Allure TestOps Official k8S Deploy
+# Allure TestOps deploy in kubernetes
 
-### Values Example:
+## Deploy description
+
+https://docs.qameta.io/allure-testops/getstarted/kubernetes/
+
+## values.yaml template file
+
+https://github.com/qameta/allure-testops-deployment/blob/master/charts/allure-testops/values.yaml
+
+
+## Helm commands
+
+```bash
+helm repo add qameta https://dl.qameta.io/artifactory/helm
+helm repo update
+helm upgrade --install allure-testops qameta/allure-testops -f values.yaml
+```
+
+## Allure TestOps release upgrade
+
+1. update values.yaml `version`
+
 ```yaml
-## Override Version
-version: 3.193.0
+version: 4.1.0
+```
+The most recent recommended release: https://docs.qameta.io/allure-testops/release-notes/
 
-## Credentials for accessing AllureTestOps as Admin on default auth scheme
-username: admin
-password: admin
+2. Run Helm upgrade
 
-## Security Context
-runAsUser: 65534
+```bash
+helm repo update
+helm upgrade --install allure-testops qameta/allure-testops -f values.yaml
+```
 
-## your-domain.tld
-host: localhost
+## Allure TestOps Deploy update
 
-## Registry Auth. Access to registry secrets can be obtained from QAMeta team
-registry:
-  # Private registry or Proxy like Nexus
-  enabled: false
-  # Registry Domain like quay.io / docker.io / ghcr.io / ...
-  repo: docker.io
-  # Prefix with registry name
-  name: allure
-  imagePullSecret: qameta-secret
-  pullPolicy: IfNotPresent
-  auth:
-    username: foo
-    password: bar
+1. update values.yaml 
+2. Run Helm upgrade
 
-###
-## Role Based Access Control
-## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
-###
-rbac:
-  enabled: true
-  rules:
-    - apiGroups:
-        - ''
-      resources:
-        - endpoints
-        - services
-        - pods
-        - configmaps
-        - secrets
-      verbs:
-        - get
-        - watch
-        - list
-
-###
-# AWS Injection
-# Make Sure you have RBAC enabled
-# Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
-###
-aws:
-  enabled: false
-  arn: arn:aws:iam::195700002069:role/allure_s3 # Your AWS ARN
-
-###
-## Strategy for updating Gateway & UAA components
-###
-strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxUnavailable: 0
-
-network:
-  # Nginx Ingress
-  ingress:
-    enabled: false
-    className:
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-  ###
-  ## Istio Gateway
-  ## Prior to deployment, label Namespace with istio-injection=enabled to make Istio inject Envoy Sidecars
-  istio:
-    enabled: false
-    gatewaySelector:
-      istio: ingressgateway
-    # makes Allure TestOps accessible from Jira Plugin iFrame
-    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.ru"
-  # TLS Settings
-  tls:
-    enabled: false
-    secretName: allure-tls # Secret with SSL termination secrets.
-    hstsEnabled: false
-  # Important! Qameta Team doesn't provide Certmanager itself, if you don't have one,
-  # install from https://cert-manager.io/docs/installation/ and create ClusterIssuer
-  # and provide Challenge type e.g. acme http-01 or dns-01
-  certmanager:
-    enabled: false
-    # It is important where certificate is located depending on your Ingress/Istio Gateway
-    # IstioGateway require secrets with tls certs to be located in istio-system ns
-    namespace: istio-system
-    # As Let's Encrypt is not the only provider, you may use your own.
-    issuerName: letsencrypt-issuer
-    issuerGroup: cert-manager.io
-
-# Redis Config
-redis:
-  # Set Disabled if you have external Redis
-  enabled: true
-  # External Redis Host
-  host: redis.example.com
-  architecture: standalone
-  auth:
-    password: allure
-  sentinel:
-    enabled: false
-    masterSet: big_master
-    nodes: []
-
-# RabbitMQ Config
-rabbitmq:
-  enabled: true
-  external:
-    enabled: false
-    host: mq.example.com
-  auth:
-    erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx # Set your own random string
-    username: allure
-    password: allure
-  resources: {}
-
-postgresql:
-  enabled: true
-  connectionTimeout: 60000
-  postgresqlUsername: allure
-  postgresqlPassword: allure
-  external:
-    active: false
-    endpoint: db.example.com
-    port: 5432
-    sslMode: prefer
-    uaaDbName: uaa
-    uaaUsername: uaa
-    uaaPassword: secret
-    reportDbName: report
-    reportUsername: report
-    reportPassword: secret
-  initdbScripts:
-    init.sql: |
-      CREATE DATABASE uaa TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
-      CREATE DATABASE report TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
-  persistence:
-    size: 20Gi
-
-# Local FS is NOT disabled for migration purpose. Please bear in mind that primary FS for allure is S3
-fs:
-  # Supported: S3, LOCAL, NFS
-  type: "S3"
-  external: false
-  pathstyle: true
-  migration:
-    enabled: false
-    directory: /opt/allure/report/storage
-  s3:
-    endpoint: https://s3.amazonaws.com
-    bucket: allure-testops
-    region: eu-central-1
-    # If you run Allure Testops in AWS EKS you don't need stating accessKey & secretKey
-    accessKey: foo
-    secretKey: bar
-  # Required only if type is Local or NFS
-  mountPoint: /storage
-  # Create NFS Volume First as PV
-  pvc:
-    claimName: ""
-
-minio:
-  enabled: true
-  #  serviceAccount:
-  #    annotations:
-  #      eks.amazonaws.com/role-arn: arn:aws:iam::195743002069:role/allure_s3
-  auth:
-    rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
-    rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
-  disableWebUI: true
-  service:
-    ports:
-      api: 9000
-  defaultBuckets: allure-testops
-  defaultRegion: qameta-0
-  gateway:
-    # Turns minio into S3 Proxy. The only way to make Allure Testops work on Azure
-    # Useful for self-hosted Ceph because acting as caching proxy
-    enabled: false
-    type: s3 # Could be azure, gcs, nas, s3 Details @ https://artifacthub.io/packages/helm/bitnami/minio Gateway
-    replicaCount: 1
-    auth:
-      s3:
-        serviceEndpoint: https://s3.amazonaws.com # Any S3 EP except azure, gcs
-        # Note. Don't use these credentials if you run on Amazon AWS. Use ARN instead
-        accessKey: foo
-        secretKey: bar
-
-certificates:
-  # In case you use self-signed certificates, state all endpoints except for database
-  # example: endpoints: ldaps.example.com:636,rabbit.example.com:5672
-  # Script inside will retrieve certificate for you and store in jks store. 
-  endpoints:
-
-allure:
-  timeZone: "Europe/Moscow"
-  sessionLifespan: 57600
-  httpOnly: "true"
-  logging: warn
-  management:
-    # Endpoints to expose e.g. for Prometheus, HealthChecks etc.
-    expose: health,info,prometheus,configprops
-    cacheTTL: 20s
-  uaaContextPath: "/uaa/"
-  reportContextPath: "/rs/"
-  auth:
-    primary: system
-    ldap:
-      enabled: false
-      auth:
-        user: user
-        pass: pass
-      referal: follow
-      url: ldap://ldap.example.com:389
-      user:
-        dnPatterns: sAMAccountName={0}
-        searchBase: dc=example,dc=com
-        searchFilter: (&((objectClass=Person))(sAMAccountName={0}))
-      group:
-        searchBase: ou=qa,ou=Security Groups,dc=example,dc=com
-        searchFilter: (&(objectClass=Group)(member={0}))
-        roleAttribute: cn
-      # Syncs User Role by Group membership on any login
-      syncRoles: true
-      uidAttribute: sAMAccountName
-      # Maps your LDAP groups on Allure Groups
-      userGroupName: allure_users
-      adminGroupName: allure_admins
-      # If user is not in groups above, default role is assumed. Possible roles: ROLE_ADMIN,
-      # ROLE_USER, ROLE_AUDITOR
-      defaultRole: ROLE_AUDITOR
-    oidc:
-      enabled: false
-      client:
-        name: Google Auth
-        id: foo
-        secret: bar
-      redirectURI: https://example.com/login/oauth2/code/allure
-      issuerURI: https://accounts.google.com
-      userNameAttribute: preferred_username
-      scope: openid,email,profile
-      authMethod:
-      authURI:
-      tokenURI:
-      userInfoURI:
-      jwksURI:
-
-
-gateway:
-  replicaCount: 1
-  image: allure-gateway
-  tolerations: []
-  affinity: {}
-  nodeSelector: {}
-  service:
-    port: 8080
-  env:
-    open:
-      JAVA_TOOL_OPTIONS: >
-        -XX:+UseG1GC
-        -XX:+UseStringDeduplication
-        -Dsun.jnu.encoding=UTF-8
-        -Dfile.encoding=UTF-8
-  resources:
-    requests:
-      memory: 1Gi
-      cpu: 1
-    limits:
-      memory: 2Gi
-      cpu: 2
-  probes:
-    enabled: true
-    liveness:
-      probe:
-        periodSeconds: 40
-        timeoutSeconds: 2
-        successThreshold: 1
-        failureThreshold: 3
-        initialDelaySeconds: 60
-    readiness:
-      probe:
-        periodSeconds: 20
-        timeoutSeconds: 2
-        successThreshold: 1
-        failureThreshold: 3
-        initialDelaySeconds: 25
-
-
-uaa:
-  replicaCount: 1
-  image: allure-uaa
-  tolerations: []
-  affinity: {}
-  nodeSelector: {}
-  service:
-    port: 8082
-  env:
-    open:
-      JAVA_TOOL_OPTIONS: >
-        -XX:+UseG1GC
-        -XX:+UseStringDeduplication
-        -Dsun.jnu.encoding=UTF-8
-        -Dfile.encoding=UTF-8
-  # Considering resource planning bear in mind that many pods is good but DB connections are expensive
-  resources:
-    requests:
-      memory: 1Gi
-      cpu: 500m
-    limits:
-      memory: 2Gi
-      cpu: 1
-  probes:
-    # Disable them during updates involving DB migrations
-    enabled: true
-    liveness:
-      probe:
-        periodSeconds: 40
-        timeoutSeconds: 2
-        successThreshold: 1
-        failureThreshold: 3
-        initialDelaySeconds: 60
-    readiness:
-      probe:
-        periodSeconds: 20
-        timeoutSeconds: 5
-        successThreshold: 1
-        failureThreshold: 10
-        initialDelaySeconds: 60
-
-report:
-  replicaCount: 1
-  image: allure-report
-  tolerations: []
-  affinity: {}
-  nodeSelector: {}
-  service:
-    port: 8081
-  persistence:
-    accessMode: ReadWriteOnce
-    size: 10Gi
-    annotations: {}
-    finalizers:
-      - kubernetes.io/pvc-protection
-  env:
-    open:
-      JAVA_TOOL_OPTIONS: >
-        -XX:+UseG1GC
-        -XX:+UseStringDeduplication
-        -Dsun.jnu.encoding=UTF-8
-        -Dfile.encoding=UTF-8
-  # Considering resource planning bear in mind that many pods is good but DB connections are expensive
-  resources:
-    requests:
-      memory: 3Gi
-      cpu: 1
-    limits:
-      memory: 4Gi
-      cpu: 4
-  probes:
-    # Disable them during updates involving DB migrations
-    enabled: true
-    liveness:
-      probe:
-        periodSeconds: 40
-        timeoutSeconds: 2
-        successThreshold: 1
-        failureThreshold: 3
-        initialDelaySeconds: 300
-    readiness:
-      probe:
-        periodSeconds: 30
-        timeoutSeconds: 5
-        successThreshold: 1
-        failureThreshold: 130
-        initialDelaySeconds: 60
-
-# Before enabling monitoring make sure you have Prometheus & Prometheus Operator Installed
-monitoring:
-  enabled: false
+```bash
+helm repo update
+helm upgrade --install allure-testops qameta/allure-testops -f values.yaml
 ```
