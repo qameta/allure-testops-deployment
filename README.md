@@ -42,3 +42,9 @@ helm upgrade --install allure-testops qameta/allure-testops -f values.yaml
 helm repo update
 helm upgrade --install allure-testops qameta/allure-testops -f values.yaml
 ```
+
+## Uninstalling the deployment
+
+```bash
+helm delete allure-testops
+```
