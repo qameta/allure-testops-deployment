@@ -32,6 +32,6 @@ spec:
   tls:
     - secretName: {{ .Values.network.tls.secretName }}
       hosts:
-        - {{ .Values.host . }}
+        - {{ .Values.host }}
 {{- end -}}
 {{- end -}}
