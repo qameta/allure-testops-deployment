@@ -1,5 +1,5 @@
 ## Override Version
-version: 4.1.0
+version: 4.4.0
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -136,8 +136,10 @@ postgresql:
     username: allure
     password: allure
   external:
-    endpoint: db.example.com
-    port: 5432
+    uaaHost: db.example.com
+    uaaPort: 5432
+    reportHost: db.example.com
+    reportPort: 5432
     sslMode: prefer
     uaaDbName: uaa
     uaaUsername: uaa

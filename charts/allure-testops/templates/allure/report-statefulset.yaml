@@ -56,7 +56,7 @@ spec:
         - name: check-db-ready
           image: postgres:9.6.5
           command: [ 'sh', '-c',
-            'until pg_isready -h {{ .Values.postgresql.external.endpoint }} -p {{ .Values.postgresql.external.port }};
+            'until pg_isready -h {{ .Values.postgresql.external.reportHost }} -p {{ .Values.postgresql.external.reportPort }};
             do echo waiting for database; sleep 2; done;' ]
 {{- end }}
       containers:
@@ -90,7 +90,7 @@ spec:
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report"
 {{- else }}
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.reportDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
+          value: "jdbc:postgresql://{{ .Values.postgresql.external.reportHost }}:{{ .Values.postgresql.external.reportPort }}/{{ .Values.postgresql.external.reportDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
 {{- end }}
 {{- if eq .Values.fs.type "S3" }}
 {{- if .Values.fs.external }}
@@ -213,7 +213,7 @@ spec:
           value: "{{ .Values.gateway.service.port }}"
 {{- if eq .Values.postgresql.external.sslMode "require" }}
         - name: TLS_DB_ENDPOINTS
-          value: "{{ .Values.postgresql.external.endpoint}}:{{ .Values.postgresql.external.port }}"
+          value: "{{ .Values.postgresql.external.reportHost}}:{{ .Values.postgresql.external.reportPort }}"
 {{- end }}
 {{- if .Values.certificates.endpoints }}
         - name: TLS_ENDPOINTS

@@ -75,7 +75,7 @@ spec:
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/uaa"
 {{- else }}
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://{{ .Values.postgresql.external.endpoint }}/{{ .Values.postgresql.external.uaaDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
+          value: "jdbc:postgresql://{{ .Values.postgresql.external.uaaHost }}:{{ .Values.postgresql.external.uaaPort }}/{{ .Values.postgresql.external.uaaDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
 {{- end }}
 {{- if .Values.certificates.endpoints }}
         - name: TLS_ENDPOINTS
@@ -203,7 +203,7 @@ spec:
 {{- end }}
 {{- if eq .Values.postgresql.external.sslMode "require" }}
         - name: TLS_DB_ENDPOINTS
-          value: "{{ .Values.postgresql.external.endpoint}}:{{ .Values.postgresql.external.port }}"
+          value: "{{ .Values.postgresql.external.uaaHost}}:{{ .Values.postgresql.external.uaaPort }}"
 {{- end }}
 {{- if .Values.uaa.probes.enabled }}
         livenessProbe:
