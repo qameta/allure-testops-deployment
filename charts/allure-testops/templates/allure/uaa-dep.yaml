@@ -32,6 +32,9 @@ spec:
 {{- if .Values.registry.enabled }}
       imagePullSecrets:
       - name: {{ .Values.registry.imagePullSecret }}
+{{- else if .Values.registry.externalImageSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.registry.imagePullSecret }}
 {{- end }}
       tolerations:
 {{ toYaml .Values.uaa.tolerations | indent 8 }}
