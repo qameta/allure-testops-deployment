@@ -169,7 +169,7 @@ fs:
     # for FS only
     directory: /opt/allure/report/storage
   s3:
-    # the URL should be like https://region.s3.amazonaws.com if your region is not us-east-1
+    # the URL should be like https://s3.region.amazonaws.com if your region is not us-east-1
     endpoint: https://s3.amazonaws.com
     bucket: allure-testops
     region: us-east-1
