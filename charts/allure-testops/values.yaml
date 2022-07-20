@@ -1,4 +1,6 @@
-## Override Version
+## there is no correlation between helm chart release and Allure TestOps release
+
+## this is Allure TestOps release to be deployed
 version: 4.4.1
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
