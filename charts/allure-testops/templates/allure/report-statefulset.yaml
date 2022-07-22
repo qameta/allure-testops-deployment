@@ -30,10 +30,8 @@ spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "allure-testops.name" . }}-sa
 {{- end }}
-{{- if .Values.registry.enabled }}
       imagePullSecrets:
-      - name: {{ .Values.registry.imagePullSecret }}
-{{- end }}
+        - name: {{ .Values.registry.imagePullSecret }}
       tolerations:
 {{ toYaml .Values.report.tolerations | indent 8 }}
 {{- if .Values.report.affinity }}
@@ -85,6 +83,8 @@ spec:
         - name: SPRING_RABBITMQ_HOST
           value: "{{ .Values.rabbitmq.host }}"
 {{- end }}
+        - name: SPRING_RABBITMQ_PORT
+          value: "{{ .Values.rabbitmq.port }}"
 {{- if .Values.postgresql.enabled }}
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report"

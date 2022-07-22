@@ -30,10 +30,8 @@ spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName:  {{ template "allure-testops.name" . }}-sa
 {{- end }}
-{{- if .Values.registry.enabled }}
       imagePullSecrets:
       - name: {{ .Values.registry.imagePullSecret }}
-{{- end }}
       tolerations:
 {{ toYaml .Values.gateway.tolerations | indent 8 }}
 {{- if .Values.gateway.affinity }}
@@ -151,6 +149,14 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: clientSecret
+{{- end }}
+{{- if .Values.allure.auth.saml.enabled }}
+        - name: SPRING_SECURITY_SAML2_RELYINGPARTY_REGISTRATION_{{ .Values.allure.auth.saml.provider | upper }}_ACS_LOCATION
+          value: "{{ .Values.allure.auth.saml.ACSLocation }}"
+        - name: SPRING_SECURITY_SAML2_RELYINGPARTY_REGISTRATION_{{ .Values.allure.auth.saml.provider | upper }}_ENTITYID
+          value: "{{ .Values.allure.auth.saml.entityId }}"
+        - name: SPRING_SECURITY_SAML2_RELYINGPARTY_REGISTRATION_{{ .Values.allure.auth.saml.provider | upper }}_IDENTITYPROVIDER_METADATAURI
+          value: "{{ .Values.allure.auth.saml.identityProviderMetadataUri }}"
 {{- end }}
 {{- if .Values.certificates.endpoints }}
         - name: TLS_ENDPOINTS

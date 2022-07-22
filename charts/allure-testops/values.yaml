@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.4.1
+version: 4.4.2
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -120,6 +120,7 @@ rabbitmq:
   # Update to 'false' if you have RabbitMQ deployed in your infrastructure and you are allowed to use it with Allure TestOps
   enabled: true
   host: mq.example.com
+  port: 5672
   auth:
     # If you have dedicated RabbitMQ server, then take this value from dedicated RabbitMQ settings
     # Otherwise set to your own random string
@@ -253,6 +254,7 @@ allure:
   uaaContextPath: "/uaa/"
   reportContextPath: "/rs/"
   auth:
+    # Available options system / oidc / saml2 / ldap
     primary: system
     ldap:
       enabled: false
@@ -278,21 +280,43 @@ allure:
       # If user is not in groups above, default role is assumed. Possible roles: ROLE_ADMIN,
       # ROLE_USER, ROLE_AUDITOR
       defaultRole: ROLE_AUDITOR
+    # OIDC is Generic Client Name. Don't worry about it's not Google/Gitlab/Github/Keycloak/etc...
     oidc:
       enabled: false
       client:
+        # Your client name, for example Okta
         name: Google Auth
+        # Your clientId (Get one from OIDC provider)
         id: foo
+        # Your clientSecret (Get one from OIDC provider)
         secret: bar
-      redirectURI: https://example.com/login/oauth2/code/allure
+      # This parameter lets know where your OIDC provider is going to redirect client after successful login
+      redirectURI: https://<your-domain>/login/oauth2/code/allure
+      # URL of your auth provider
       issuerURI: https://accounts.google.com
+      # This parameter tells allure-testops to use as username. It can be email
       userNameAttribute: preferred_username
       scope: openid,email,profile
+      ## Parameters below are NOT compulsory. You need them only if your OIDC provider doesn't support OIDC discovery protocol
+
+      # basic, post, etc...
+      # More info: https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/oauth2/core/ClientAuthenticationMethod.html
       authMethod:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/authorize)
       authURI:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/token)
       tokenURI:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/userinfo)
       userInfoURI:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/keys)
       jwksURI:
+
+    saml:
+      enabled: false
+      provider: crowd
+      ACSLocation: https://<your-domain>/api/login/saml2/sso/crowd
+      entityId: https://<testops>/api/login/saml2/service-provider-metadata/crowd
+      identityProviderMetadataUri: https:///path/to/metadata.xml
 
 
 gateway:

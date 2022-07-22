@@ -29,10 +29,8 @@ spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName:  {{ template "allure-testops.name" . }}-sa
 {{- end }}
-{{- if .Values.registry.enabled }}
       imagePullSecrets:
-      - name: {{ .Values.registry.imagePullSecret }}
-{{- end }}
+        - name: {{ .Values.registry.imagePullSecret }}
       tolerations:
 {{ toYaml .Values.uaa.tolerations | indent 8 }}
 {{- if .Values.uaa.affinity }}
@@ -82,9 +80,9 @@ spec:
           value: "{{ .Values.certificates.endpoints }}"
 {{- end }}
         - name: ALLURE_REGISTRATION_ENABLED
-          value: {{ .Values.allure.registrationEnabled }}
+          value: "{{ .Values.allure.registrationEnabled }}"
         - name: ALLURE_REGISTRATION_AUTOAPPROVE
-          value: {{ .Values.allure.autoApprove }}
+          value: "{{ .Values.allure.autoApprove }}"
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
