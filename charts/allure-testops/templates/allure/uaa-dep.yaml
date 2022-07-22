@@ -80,11 +80,11 @@ spec:
 {{- if .Values.certificates.endpoints }}
         - name: TLS_ENDPOINTS
           value: "{{ .Values.certificates.endpoints }}"
+{{- end }}
         - name: ALLURE_REGISTRATION_ENABLED
           value: {{ .Values.allure.registrationEnabled }}
         - name: ALLURE_REGISTRATION_AUTOAPPROVE
           value: {{ .Values.allure.autoApprove }}
-{{- end }}
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
