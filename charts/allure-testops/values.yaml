@@ -77,6 +77,13 @@ network:
     # Update this with real Jira instance URL
     domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.com"
 
+  ###
+  ## OpenShift Route
+  ##
+  route:
+    enabled: false
+    annotations: {}
+    tls: {}
   # TLS Settings
   tls:
     # to be set to 'true' if SSL is to be used for your deployment

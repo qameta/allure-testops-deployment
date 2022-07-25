@@ -1,0 +1,22 @@
+{{- if .Values.network.route.enabled }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ template "allure-ee.fullname" . }}
+{{- if .Values.network.route.annotations }}
+  annotations:
+{{ toYaml .Values.network.ingress.annotations | indent 4 }}
+{{- end }}
+spec:
+  host: {{ .Values.host }}
+  port:
+    targetPort: {{ .Values.gateway.service.port }}
+  to:
+    kind: Service
+    name: {{ template "allure-testops.gateway.fullname" . }}
+{{- if .Values.network.route.tls }}
+  tls:
+{{ toYaml .Values.network.route.tls | indent 4 }}
+{{- end}}
+{{- end }}
