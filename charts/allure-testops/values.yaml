@@ -9,7 +9,9 @@ password: admin
 
 ## Security Context
 ## 65534 started by a user with lowest privilegies
-runAsUser: 65534
+containerSecurityContext:
+  enabled: true
+  runAsUser: 65534
 
 ## your-domain.tld
 ## the real DNS name (FQDN) of the allure testops instance

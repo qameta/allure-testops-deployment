@@ -53,8 +53,9 @@ spec:
       - name: {{ template "allure-testops.uaa.fullname" . }}
         image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.uaa.image }}:{{ .Values.version | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.registry.pullPolicy }}
-        securityContext:
-          runAsUser: {{ .Values.runAsUser }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         ports:
         - name: http
           containerPort: 8082
