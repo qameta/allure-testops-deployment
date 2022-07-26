@@ -157,7 +157,7 @@ postgresql:
     reportDbName: report
     reportUsername: report
     reportPassword: secret
-  # this works for postgres in the pod only. For external DB you need to exeute these manually when creating the databases
+  # this works for postgres in the pod only. For external DB you need to execute these manually when creating the databases
   primary:
     initdb:
       scripts:
@@ -247,7 +247,7 @@ allure:
   registrationEnabled: false
   # Lets users bypass admin's registration approval
   autoApprove: false
-  # Upldate your time zone accordingly to the real settings of your server env
+  # Update your time zone accordingly to the real settings of your server env
   timeZone: "Europe/London"
   sessionLifespan: 57600
   # Update secureCookies
