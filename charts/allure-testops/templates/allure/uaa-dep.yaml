@@ -83,6 +83,8 @@ spec:
           value: "{{ .Values.allure.registrationEnabled }}"
         - name: ALLURE_REGISTRATION_AUTOAPPROVE
           value: "{{ .Values.allure.autoApprove }}"
+        - name: ALLURE_REGISTRATION_DEFAULT_ROLE
+          value: {{ .Values.allure.auth.defaultRole }}
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
@@ -187,8 +189,6 @@ spec:
           value: "{{ .Values.allure.auth.ldap.userGroupName }}"
         - name: ALLURE_LOGIN_LDAP_GROUPAUTHORITIES_ROLEADMINGROUPS
           value: "{{ .Values.allure.auth.ldap.adminGroupName }}"
-        - name: ALLURE_LOGIN_LDAP_DEFAULTROLE
-          value: {{ .Values.allure.auth.ldap.defaultRole }}
 {{- end }}
         - name: ALLURE_LOGIN_LDAP_USERDN
           valueFrom:

@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.4.2
+version: 4.4.3
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -263,6 +263,8 @@ allure:
   auth:
     # Available options system / oidc / saml2 / ldap
     primary: system
+    # Possible roles: ROLE_ADMIN, ROLE_USER, ROLE_AUDITOR
+    defaultRole: ROLE_USER
     ldap:
       enabled: false
       auth:
@@ -284,9 +286,6 @@ allure:
       # Maps your LDAP groups on Allure Groups
       userGroupName: allure_users
       adminGroupName: allure_admins
-      # If user is not in groups above, default role is assumed. Possible roles: ROLE_ADMIN,
-      # ROLE_USER, ROLE_AUDITOR
-      defaultRole: ROLE_AUDITOR
     # OIDC is Generic Client Name. Don't worry about it's not Google/Gitlab/Github/Keycloak/etc...
     oidc:
       enabled: false
