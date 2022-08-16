@@ -11,3 +11,4 @@ configs
 *-internal.yaml
 *-internal-*.yaml
 *-local.yaml
+*-yandex.yaml

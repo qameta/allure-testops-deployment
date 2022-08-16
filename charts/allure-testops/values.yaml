@@ -244,6 +244,20 @@ certificates:
   # Script inside will retrieve certificate for you and store in jks store.
   endpoints:
 
+# Provide your smtp config to let TestOps send you emails
+smtp:
+  enabled: false
+  host: smtp.gmail.com
+  port: 465
+  authEnabled: true
+  username: sa-testops-smtp
+  password: SuperSecret
+  # https://en.wikipedia.org/wiki/Opportunistic_TLS
+  startTLSEnabled: true
+  startTLSRequired: true
+  sslEnabled: true
+  sslTrust: smtp.gmail.com
+
 allure:
   # Allows unregistered users to register
   registrationEnabled: false

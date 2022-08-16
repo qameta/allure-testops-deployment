@@ -202,6 +202,26 @@ spec:
               name: {{ $secret_name }}
               key: ldapPass
 {{- end }}
+{{- if .Values.smtp.enabled }}
+        - name: SPRING_MAIL_HOST
+          value: {{ .Values.smtp.host }}
+        - name: SPRING_MAIL_PORT
+          value: {{ .Values.smtp.port }}
+        - name: SPRING_MAIL_USERNAME
+          value: {{ .Values.smtp.username }}
+        - name: SPRING_MAIL_PASSWORD
+          value: {{ .Values.smtp.password }}
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+          value: {{ .Values.smtp.authEnabled | quote }}
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+          value: {{ .Values.smtp.startTLSEnabled | quote }}
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED
+          value: {{ .Values.smtp.startTLSRequired | quote }}
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE
+          value: {{ .Values.smtp.sslEnabled | quote }}
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST
+          value: {{ .Values.smtp.sslTrust | quote }}
+{{- end }}
 {{- if eq .Values.postgresql.external.sslMode "require" }}
         - name: TLS_DB_ENDPOINTS
           value: "{{ .Values.postgresql.external.uaaHost}}:{{ .Values.postgresql.external.uaaPort }}"
