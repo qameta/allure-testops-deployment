@@ -44,7 +44,7 @@ spec:
 {{- if .Values.postgresql.enabled }}
       initContainers:
         - name: check-db-ready
-          image: postgres:9.6.5
+          image: "{{ .Values.initContainers.postgresql.image }}:{{ .Values.initContainers.postgresql.version }}"
           command: [ 'sh', '-c',
             'until pg_isready -h {{ template "allure-testops.postgresql.fullname" . }} -p 5432;
              do echo waiting for database; sleep 2; done;' ]

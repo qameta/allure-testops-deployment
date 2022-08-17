@@ -38,6 +38,13 @@ registry:
     password: bar
 
 
+###
+## Settings for initContainers images
+###
+initContainers:
+  postgresql:
+    image: postgres
+    version: 9.6.5
 
 ###
 ## Strategy for updating Gateway & UAA components
