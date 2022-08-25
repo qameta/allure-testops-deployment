@@ -160,12 +160,6 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "rabbitPass"
-        - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
-          value: "org.postgresql.Driver"
-        - name: SPRING_JPA_DATABASE_PLATFORM
-          value: "org.hibernate.dialect.PostgreSQL9Dialect"
-        - name: SPRING_JPA_PROPERTIES_HIBERNATE_GLOBALLY_QUOTED_IDENTIFIERS
-          value: "true"
         - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
           value: "{{ .Values.postgresql.connectionTimeout }}"
         - name: TZ

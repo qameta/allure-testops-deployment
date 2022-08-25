@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.4.3
+version: 4.6.0
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -9,6 +9,7 @@ password: admin
 
 ## Security Context
 ## 65534 started by a user with lowest privilegies
+## Openshift requires different range e.g. >= 1000620000
 containerSecurityContext:
   enabled: true
   runAsUser: 65534
