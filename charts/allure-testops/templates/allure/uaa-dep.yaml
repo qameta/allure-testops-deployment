@@ -84,8 +84,6 @@ spec:
           value: "{{ .Values.allure.registrationEnabled }}"
         - name: ALLURE_REGISTRATION_AUTOAPPROVE
           value: "{{ .Values.allure.autoApprove }}"
-        - name: ALLURE_REGISTRATION_DEFAULT_ROLE
-          value: {{ .Values.allure.auth.defaultRole }}
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
@@ -159,6 +157,8 @@ spec:
 {{- if .Values.allure.auth.ldap.enabled }}
         - name: ALLURE_LOGIN_LDAP_ENABLED
           value: "{{ .Values.allure.auth.ldap.enabled }}"
+        - name: ALLURE_LOGIN_LDAP_DEFAULTROLE
+          value: {{ .Values.allure.auth.defaultRole }}
         - name: ALLURE_LOGIN_LDAP_REFERAL
           value: "{{ .Values.allure.auth.ldap.referal }}"
         - name: ALLURE_LOGIN_LDAP_URL
@@ -195,6 +195,14 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: ldapPass
+{{- end }}
+{{ if .Values.allure.auth.oidc }}
+        - name: ALLURE_LOGIN_OPENID_DEFAULTROLE
+          value: {{ .Values.allure.auth.defaultRole }}
+{{- end }}
+{{- if .Values.allure.auth.saml }}
+        - name: ALLURE_LOGIN_SAML2_DEFAULTROLE
+          value: {{ .Values.allure.auth.defaultRole }}
 {{- end }}
 {{- if .Values.smtp.enabled }}
         - name: SPRING_MAIL_HOST
