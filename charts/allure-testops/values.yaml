@@ -423,6 +423,8 @@ uaa:
         successThreshold: 1
         failureThreshold: 10
         initialDelaySeconds: 60
+  volumeMounts: []
+  volumes: []
 
 report:
   replicaCount: 1
