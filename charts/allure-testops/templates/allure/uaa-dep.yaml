@@ -50,7 +50,7 @@ spec:
              do echo waiting for database; sleep 2; done;' ]
 {{- end }}
       {{- with .Values.uaa.volumes }}
-      volumes: {{- toYaml . | nindent 4 }}
+      volumes: {{- toYaml . | indent 8 }}
       {{- end }}
       containers:
       - name: {{ template "allure-testops.uaa.fullname" . }}
