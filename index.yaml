@@ -3,7 +3,44 @@ entries:
   allure-testops:
   - apiVersion: v2
     appVersion: 4.6.0
-    created: "2022-08-30T14:49:06.8452066+02:00"
+    created: "2022-08-30T15:19:09.8132499+02:00"
+    dependencies:
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.1.14
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.6.16
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 17.0.1
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.7.9
+    description: Allure TestOps
+    digest: f916ac5f6617aa4affc3762d876a200976eb402b47054ffd79666a8df3a54124
+    home: https://qameta.io
+    kubeVersion: '>= 1.14.0-0'
+    maintainers:
+    - email: eroshenkoam@qameta.io
+      name: eroshenkoam
+    - email: andrey.ryoo@qameta.io
+      name: Andrey Ryoo
+    name: allure-testops
+    sources:
+    - https://hub.docker.com/r/allure/allure-ui
+    - https://hub.docker.com/r/allure/allure-uaa
+    - https://hub.docker.com/r/allure/allure-report
+    urls:
+    - https://prophesee-ai.github.io/allure-testops-deployment/allure-testops-4.6.3.tgz
+    version: 4.6.3
+  - apiVersion: v2
+    appVersion: 4.6.0
+    created: "2022-08-30T15:19:09.7712467+02:00"
     dependencies:
     - condition: rabbitmq.enabled
       name: rabbitmq
@@ -38,4 +75,4 @@ entries:
     urls:
     - https://prophesee-ai.github.io/allure-testops-deployment/allure-testops-4.6.2.tgz
     version: 4.6.2
-generated: "2022-08-30T14:49:06.8048316+02:00"
+generated: "2022-08-30T15:19:09.7305735+02:00"

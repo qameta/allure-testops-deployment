@@ -50,7 +50,7 @@ spec:
              do echo waiting for database; sleep 2; done;' ]
 {{- end }}
       {{- with .Values.uaa.volumes }}
-      volumes: {{- toYaml . | indent 8 }}
+      volumes: {{- toYaml . | nindent 6 }}
       {{- end }}
       containers:
       - name: {{ template "allure-testops.uaa.fullname" . }}
@@ -64,7 +64,7 @@ spec:
           containerPort: 8082
 {{- $secret_name := include "allure-testops.secret.name" . }}
         {{- with .Values.uaa.volumeMounts }}
-        volumeMounts: {{- toYaml . | nindent 10 }}
+        volumeMounts: {{- toYaml . | nindent 8 }}
         {{- end }}
         env:
         - name: ALLURE_ENDPOINT
