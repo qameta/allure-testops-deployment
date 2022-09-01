@@ -68,6 +68,8 @@ spec:
         - name: http
           containerPort: 8081
         env:
+        - name: SERVER_PORT
+          value: {{ .Values.report.service.port }}
 {{- $secret_name := include "allure-testops.secret.name" . }}
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
