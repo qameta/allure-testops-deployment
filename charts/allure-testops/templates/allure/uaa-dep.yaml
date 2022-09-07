@@ -62,7 +62,7 @@ spec:
 {{- $secret_name := include "allure-testops.secret.name" . }}
         env:
         - name: SERVER_PORT
-          value: {{ .Values.uaa.service.port }}
+          value: "{{ .Values.uaa.service.port }}"
         - name: ALLURE_ENDPOINT
 {{- if .Values.network.tls.enabled }}
           value: "https://{{ .Values.host }}"

@@ -78,7 +78,7 @@ network:
       istio: ingressgateway
     # makes Allure TestOps accessible from Jira Plugin iFrame
     # Update this with real Jira instance URL
-    domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.com"
+    # domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.com"
 
   ###
   ## OpenShift Route
