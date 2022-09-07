@@ -1,7 +1,7 @@
 apiVersion: v2
 name: allure-testops
-version: 4.6.0
-appVersion: 4.6.0
+version: 4.6.4
+appVersion: 4.6.4
 
 description: Allure TestOps
 

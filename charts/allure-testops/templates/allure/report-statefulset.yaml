@@ -21,10 +21,12 @@ spec:
       labels:
         app: {{ template "allure-testops.report.fullname" . }}
         version: v1
+{{- if .Values.report.annotations }}
       annotations:
-        co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
-        co.elastic.logs/multiline.match: after
-        co.elastic.logs/multiline.negate: "true"
+{{- range $key, $value := .Values.report.annotations }}
+        {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
     spec:
       terminationGracePeriodSeconds: 30
 {{- if .Values.rbac.enabled }}
@@ -45,14 +47,14 @@ spec:
 {{- if .Values.postgresql.enabled }}
       initContainers:
         - name: check-db-ready
-          image: postgres:9.6.5
+          image: postgres:14
           command: [ 'sh', '-c',
             'until pg_isready -h {{ template "allure-testops.postgresql.fullname" . }} -p 5432;
              do echo waiting for database; sleep 2; done;' ]
 {{- else }}
       initContainers:
         - name: check-db-ready
-          image: postgres:9.6.5
+          image: postgres:14
           command: [ 'sh', '-c',
             'until pg_isready -h {{ .Values.postgresql.external.reportHost }} -p {{ .Values.postgresql.external.reportPort }};
             do echo waiting for database; sleep 2; done;' ]

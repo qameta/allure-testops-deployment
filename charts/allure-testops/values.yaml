@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.6.0
+version: 4.6.4
 
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
@@ -349,6 +349,10 @@ gateway:
   tolerations: []
   affinity: {}
   nodeSelector: {}
+  annotations:
+    co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
+    co.elastic.logs/multiline.match: after
+    co.elastic.logs/multiline.negate: "true"
   service:
     port: 8080
   env:
@@ -389,6 +393,10 @@ uaa:
   tolerations: []
   affinity: {}
   nodeSelector: {}
+  annotations:
+    co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
+    co.elastic.logs/multiline.match: after
+    co.elastic.logs/multiline.negate: "true"
   service:
     port: 8082
   env:
@@ -430,6 +438,10 @@ report:
   tolerations: []
   affinity: {}
   nodeSelector: {}
+  annotations:
+    co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
+    co.elastic.logs/multiline.match: after
+    co.elastic.logs/multiline.negate: "true"
   service:
     port: 8081
   persistence:

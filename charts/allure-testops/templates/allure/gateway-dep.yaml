@@ -22,10 +22,12 @@ spec:
       labels:
         app: {{ template "allure-testops.gateway.fullname" . }}
         version: v1
+{{- if .Values.gateway.annotations }}
       annotations:
-        co.elastic.logs/multiline.pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:"
-        co.elastic.logs/multiline.match: after
-        co.elastic.logs/multiline.negate: "true"
+{{- range $key, $value := .Values.gateway.annotations }}
+        {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
     spec:
 {{- if .Values.rbac.enabled }}
       serviceAccountName:  {{ template "allure-testops.name" . }}-sa
