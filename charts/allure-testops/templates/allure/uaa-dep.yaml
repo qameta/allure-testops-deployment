@@ -70,6 +70,7 @@ spec:
           containerPort: {{ .Values.uaa.service.port }}
 {{- $secret_name := include "allure-testops.secret.name" . }}
         env:
+{{- if not .Values.allure.manualConfig }}
         - name: SERVER_PORT
           value: "{{ .Values.uaa.service.port }}"
         - name: ALLURE_ENDPOINT
@@ -240,6 +241,7 @@ spec:
 {{- if eq .Values.postgresql.external.sslMode "require" }}
         - name: TLS_DB_ENDPOINTS
           value: "{{ .Values.postgresql.external.uaaHost}}:{{ .Values.postgresql.external.uaaPort }}"
+{{- end }}
 {{- end }}
 {{- if .Values.uaa.probes.enabled }}
         livenessProbe:

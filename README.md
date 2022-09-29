@@ -43,6 +43,53 @@ helm repo update
 helm upgrade --install allure-testops qameta/allure-testops -f values.yaml
 ```
 
+## Azure Special Requirements
+
+```shell
+# Create Resource Group
+az group create --name "testops-azure-minio" --location "WestUS"
+
+# Create Storage Account
+az storage account create \
+    --name "testops-azure-minio-storage" \
+    --kind BlobStorage \
+    --sku Standard_LRS \
+    --access-tier {your_tier} \
+    --resource-group "testops-azure-minio" \
+    --location "WestUS"
+
+# Retrieve Account Key    
+az storage account show-connection-string \
+    --name "testops-azure-minio-storage" \
+    --resource-group "testops-azure-minio"
+
+# Create AppService Plan    
+az appservice plan create \
+    --name "testops-azure-minio-app-plan" \
+    --is-linux \
+    --sku B1 \
+    --resource-group "testops-azure-minio" \
+    --location "WestUS"
+
+# Create Minio WebApp    
+az webapp create \
+    --name "testops-minio-app" \
+    --deployment-container-image-name "minio/minio" \
+    --plan "testops-azure-minio-app-plan" \
+    --resource-group "testops-azure-minio"
+    
+az webapp config appsettings set \
+    --settings "MINIO_ACCESS_KEY={accessKey}" "MINIO_SECRET_KEY={secretKey}" "PORT=9000" \
+    --name "testops-minio-app" \
+    --resource-group "testops-azure-minio"
+    
+# Startup command
+az webapp config set \
+    --startup-file "gateway azure" \
+    --name "testops-minio-app" \
+    --resource-group "testops-azure-minio"
+```
+
 ## Uninstalling the deployment
 
 ```bash

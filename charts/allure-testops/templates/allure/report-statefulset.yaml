@@ -70,6 +70,7 @@ spec:
         - name: http
           containerPort: 8081
         env:
+{{- if not .Values.allure.manualConfig }}
         - name: SERVER_PORT
           value: "{{ .Values.report.service.port }}"
 {{- $secret_name := include "allure-testops.secret.name" . }}
@@ -217,6 +218,7 @@ spec:
 {{- if .Values.certificates.endpoints }}
         - name: TLS_ENDPOINTS
           value: "{{ .Values.certificates.endpoints }}"
+{{- end }}
 {{- end }}
 {{- if .Values.report.probes.enabled }}
         livenessProbe:

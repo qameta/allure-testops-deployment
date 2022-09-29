@@ -55,6 +55,7 @@ spec:
         - name: http
           containerPort: {{ .Values.gateway.service.port }}
         env:
+{{- if not .Values.allure.manualConfig }}
         - name: SERVER_PORT
           value: "{{ .Values.gateway.service.port }}"
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
@@ -179,6 +180,7 @@ spec:
           value: "{{ template "allure-testops.gateway.fullname" . }}"
         - name: ALLURE_EE_GATEWAY_SERVICE_PORT
           value: "{{ .Values.gateway.service.port }}"
+{{- end }}
 {{- if .Values.gateway.probes.enabled }}
         livenessProbe:
           httpGet:
