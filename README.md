@@ -88,6 +88,8 @@ az webapp config set \
     --startup-file "gateway azure" \
     --name "testops-minio-app" \
     --resource-group "testops-azure-minio"
+    
+# Then s3 will be available at https://testops-minio-app.azurewebsites.net
 ```
 
 ## Uninstalling the deployment
