@@ -73,7 +73,7 @@ spec:
 {{- if not .Values.allure.manualConfig }}
         - name: SERVER_PORT
           value: "{{ .Values.uaa.service.port }}"
-        - name: ALLURE_ENDPOINT
+        - name: {{ .Values.build }}_ENDPOINT
 {{- if .Values.network.tls.enabled }}
           value: "https://{{ .Values.host }}"
 {{- else }}
@@ -92,30 +92,30 @@ spec:
         - name: TLS_ENDPOINTS
           value: "{{ .Values.certificates.endpoints }}"
 {{- end }}
-        - name: ALLURE_REGISTRATION_ENABLED
+        - name: {{ .Values.build }}_REGISTRATION_ENABLED
           value: "{{ .Values.allure.registrationEnabled }}"
-        - name: ALLURE_REGISTRATION_AUTOAPPROVE
+        - name: {{ .Values.build }}_REGISTRATION_AUTOAPPROVE
           value: "{{ .Values.allure.autoApprove }}"
 {{- range $name, $value := .Values.uaa.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
 {{- end }}
-        - name: ALLURE_JWT_SECRET
+        - name: {{ .Values.build }}_JWT_SECRET
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "jwtSecret"
-        - name: "ALLURE_SECURITY_USER_NAME"
+        - name: {{ .Values.build }}_SECURITY_USER_NAME
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "username"
-        - name: "ALLURE_CRYPTO_PASSWORD"
+        - name: {{ .Values.build }}_CRYPTO_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
-              key: "password"
-        - name: "ALLURE_SECURITY_USER_PASSWORD"
+              key: "cryptoPass"
+        - name: {{ .Values.build }}_SECURITY_USER_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
@@ -164,56 +164,64 @@ spec:
           value: "{{ template "allure-testops.gateway.fullname" . }}"
         - name: ALLURE_EE_GATEWAY_SERVICE_PORT
           value: "{{ .Values.gateway.service.port }}"
-        - name: ALLURE_LOGIN_PRIMARY
+        - name: {{ .Values.build }}_LOGIN_PRIMARY
           value: {{ .Values.allure.auth.primary }}
 {{- if .Values.allure.auth.ldap.enabled }}
-        - name: ALLURE_LOGIN_LDAP_ENABLED
+        - name: {{ .Values.build }}_LOGIN_LDAP_ENABLED
           value: "{{ .Values.allure.auth.ldap.enabled }}"
-        - name: ALLURE_LOGIN_LDAP_DEFAULTROLE
+        - name: {{ .Values.build }}_LOGIN_LDAP_DEFAULTROLE
           value: {{ .Values.allure.auth.defaultRole }}
-        - name: ALLURE_LOGIN_LDAP_REFERAL
+        - name: {{ .Values.build }}_LOGIN_LDAP_REFERAL
           value: "{{ .Values.allure.auth.ldap.referal }}"
-        - name: ALLURE_LOGIN_LDAP_URL
+        - name: {{ .Values.build }}_LOGIN_LDAP_URL
           value: "{{ .Values.allure.auth.ldap.url }}"
-        - name: ALLURE_LOGIN_LDAP_USERDNPATTERNS
+        - name: {{ .Values.build }}_LOGIN_LDAP_USERDNPATTERNS
           value: "{{ .Values.allure.auth.ldap.user.dnPatterns }}"
-        - name: ALLURE_LOGIN_LDAP_USERSEARCHBASE
+        - name: {{ .Values.build }}_LOGIN_LDAP_USERSEARCHBASE
           value: "{{ .Values.allure.auth.ldap.user.searchBase }}"
-        - name: ALLURE_LOGIN_LDAP_USERSEARCHFILTER
+        - name: {{ .Values.build }}_LOGIN_LDAP_USERSEARCHFILTER
           value: "{{ .Values.allure.auth.ldap.user.searchFilter }}"
-        - name: ALLURE_LOGIN_LDAP_UIDATTRIBUTE
+        - name: {{ .Values.build }}_LOGIN_LDAP_UIDATTRIBUTE
           value: "{{ .Values.allure.auth.ldap.uidAttribute }}"
-        - name: ALLURE_LOGIN_LDAP_GROUPSEARCHBASE
+        - name: {{ .Values.build }}_LOGIN_LDAP_GROUPSEARCHBASE
           value: "{{ .Values.allure.auth.ldap.group.searchBase }}"
-        - name: ALLURE_LOGIN_LDAP_GROUPSEARCHFILTER
+        - name: {{ .Values.build }}_LOGIN_LDAP_GROUPSEARCHFILTER
           value: "{{ .Values.allure.auth.ldap.group.searchFilter }}"
-        - name: ALLURE_LOGIN_LDAP_GROUPROLEATTRIBUTE
+        - name: {{ .Values.build }}_LOGIN_LDAP_GROUPROLEATTRIBUTE
           value: "{{ .Values.allure.auth.ldap.group.roleAttribute }}"
 {{- if .Values.allure.auth.ldap.syncRoles }}
-        - name: ALLURE_LOGIN_LDAP_SYNCROLES
+        - name: {{ .Values.build }}_LOGIN_LDAP_SYNCROLES
           value: "{{ .Values.allure.auth.ldap.syncRoles }}"
-        - name: ALLURE_LOGIN_LDAP_GROUPAUTHORITIES_ROLEUSERGROUPS
+        - name: {{ .Values.build }}_LOGIN_LDAP_GROUPAUTHORITIES_ROLEUSERGROUPS
           value: "{{ .Values.allure.auth.ldap.userGroupName }}"
-        - name: ALLURE_LOGIN_LDAP_GROUPAUTHORITIES_ROLEADMINGROUPS
+        - name: {{ .Values.build }}_LOGIN_LDAP_GROUPAUTHORITIES_ROLEADMINGROUPS
           value: "{{ .Values.allure.auth.ldap.adminGroupName }}"
 {{- end }}
-        - name: ALLURE_LOGIN_LDAP_USERDN
+{{- if .Values.allure.auth.oidc.syncRoles }}
+        - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
+          value: "{{ .Values.allure.auth.oidc.syncRoles }}"
+        - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEUSERGROUPS
+          value: "{{ .Values.allure.auth.oidc.userGroupName }}"
+        - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEADMINGROUPS
+          value: "{{ .Values.allure.auth.oidc.adminGroupName }}"
+{{- end }}
+        - name: {{ .Values.build }}_LOGIN_LDAP_USERDN
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: ldapUser
-        - name: ALLURE_LOGIN_LDAP_PASSWORD
+        - name: {{ .Values.build }}_LOGIN_LDAP_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: ldapPass
 {{- end }}
 {{ if .Values.allure.auth.oidc }}
-        - name: ALLURE_LOGIN_OPENID_DEFAULTROLE
+        - name: {{ .Values.build }}_LOGIN_OPENID_DEFAULTROLE
           value: {{ .Values.allure.auth.defaultRole }}
 {{- end }}
 {{- if .Values.allure.auth.saml }}
-        - name: ALLURE_LOGIN_SAML2_DEFAULTROLE
+        - name: {{ .Values.build }}_LOGIN_SAML2_DEFAULTROLE
           value: {{ .Values.allure.auth.defaultRole }}
 {{- end }}
 {{- if .Values.smtp.enabled }}

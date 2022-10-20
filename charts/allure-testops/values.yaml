@@ -1,8 +1,10 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.7.0
+version: 4.9.1
 
+## Leave as is. This parameter is used for internal purposes
+build: ALLURE
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
 username: admin
 password: admin
@@ -336,6 +338,11 @@ allure:
       userInfoURI:
       # example (https://your-subdomain.oktapreview.com/oauth2/v1/keys)
       jwksURI:
+      # Syncs User Role by Group membership on any login
+      syncRoles: true
+      # Maps your OIDC groups on Allure Groups
+      userGroupName: allure_users
+      adminGroupName: allure_admins
 
     saml:
       enabled: false

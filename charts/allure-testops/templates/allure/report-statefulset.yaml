@@ -74,7 +74,7 @@ spec:
         - name: SERVER_PORT
           value: "{{ .Values.report.service.port }}"
 {{- $secret_name := include "allure-testops.secret.name" . }}
-        - name: ALLURE_ENDPOINT
+        - name: {{ .Values.build }}_ENDPOINT
 {{- if .Values.network.tls.enabled }}
           value: "https://{{ .Values.host }}"
 {{- else }}
@@ -100,51 +100,51 @@ spec:
 {{- end }}
 {{- if eq .Values.fs.type "S3" }}
 {{- if .Values.fs.external }}
-        - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
           value: "{{ .Values.fs.s3.endpoint }}"
-        - name: ALLURE_BLOBSTORAGE_S3_BUCKET
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_BUCKET
           value: "{{ .Values.fs.s3.bucket }}"
-        - name: ALLURE_BLOBSTORAGE_S3_REGION
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_REGION
           value: "{{ .Values.fs.s3.region }}"
 {{- else }}
-        - name: ALLURE_BLOBSTORAGE_S3_ENDPOINT
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
           value: "http://{{ template "allure-testops.minio.fullname" . }}:{{ .Values.minio.service.ports.api }}"
-        - name: ALLURE_BLOBSTORAGE_S3_BUCKET
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_BUCKET
           value: "{{ .Values.minio.defaultBuckets }}"
-        - name: ALLURE_BLOBSTORAGE_S3_REGION
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_REGION
           value: "{{ .Values.minio.defaultRegion }}"
 {{- end }}
 {{- if not .Values.aws.enabled }}
-        - name: ALLURE_BLOBSTORAGE_S3_PATHSTYLEACCESS
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_PATHSTYLEACCESS
           value: "{{ .Values.fs.pathstyle }}"
-        - name: ALLURE_BLOBSTORAGE_S3_ACCESSKEY
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ACCESSKEY
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "s3AccessKey"
-        - name: ALLURE_BLOBSTORAGE_S3_SECRETKEY
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_SECRETKEY
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "s3SecretKey"
 {{- end }}
-        - name: ALLURE_BLOBSTORAGE_TYPE
+        - name: {{ .Values.build }}_BLOBSTORAGE_TYPE
           value: S3
 {{- else }}
-        - name: ALLURE_BLOBSTORAGE_TYPE
+        - name: {{ .Values.build }}_BLOBSTORAGE_TYPE
           value: FILE_SYSTEM
-        - name: ALLURE_BLOBSTORAGE_FILESYSTEM_DIRECTORY
+        - name: {{ .Values.build }}_BLOBSTORAGE_FILESYSTEM_DIRECTORY
           value: "{{ .Values.fs.mountPoint }}"
 {{- end }}
 {{- range $name, $value := .Values.report.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
 {{- end }}
-        - name: "ALLURE_CRYPTO_PASSWORD"
+        - name: {{ .Values.build }}_CRYPTO_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
-              key: "password"
+              key: "cryptoPass"
         - name: SPRING_DATASOURCE_USERNAME
           valueFrom:
             secretKeyRef:
