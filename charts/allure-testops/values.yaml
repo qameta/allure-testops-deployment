@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.9.1
+version: 4.9.2
 
 ## Leave as is. This parameter is used for internal purposes
 build: ALLURE
@@ -133,6 +133,7 @@ rabbitmq:
   enabled: true
   host: mq.example.com
   port: 5672
+  vhost: "/"
   auth:
     # If you have dedicated RabbitMQ server, then take this value from dedicated RabbitMQ settings
     # Otherwise set to your own random string

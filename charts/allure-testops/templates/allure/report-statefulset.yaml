@@ -165,6 +165,8 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: "rabbitPass"
+        - name: SPRING_RABBITMQ_VIRTUAL_HOST
+          value: {{ .Values.rabbitmq.vhost }}
         - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
           value: "{{ .Values.postgresql.connectionTimeout }}"
         - name: TZ
