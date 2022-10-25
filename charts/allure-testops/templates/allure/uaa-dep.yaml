@@ -250,6 +250,13 @@ spec:
         - name: TLS_DB_ENDPOINTS
           value: "{{ .Values.postgresql.external.uaaHost}}:{{ .Values.postgresql.external.uaaPort }}"
 {{- end }}
+{{- if .Values.licenseKey }}
+        - name: "ALLURE_LICENSE_BODY"
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "licenseKey"
+{{- end }}
 {{- end }}
 {{- if .Values.uaa.probes.enabled }}
         livenessProbe:
