@@ -122,6 +122,8 @@ redis:
     masterSet: big_master
     nodes: []
   master:
+    persistence:
+      enabled: false
     podLabels:
       app: redis
       version: v1
