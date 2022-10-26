@@ -251,7 +251,7 @@ spec:
           value: "{{ .Values.postgresql.external.uaaHost}}:{{ .Values.postgresql.external.uaaPort }}"
 {{- end }}
 {{- if .Values.licenseKey }}
-        - name: "ALLURE_LICENSE_BODY"
+        - name: {{ .Values.build }}_LICENSE_BODY
           valueFrom:
             secretKeyRef:
               name: {{ $secret_name }}
