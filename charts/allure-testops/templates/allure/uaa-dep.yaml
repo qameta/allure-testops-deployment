@@ -47,6 +47,10 @@ spec:
       initContainers:
         - name: check-db-ready
           image: postgres:14
+{{- with .Values.postgresql.init.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+{{- end }}
           command: [ 'sh', '-c',
             'until pg_isready -h {{ template "allure-testops.postgresql.fullname" . }} -p 5432;
              do echo waiting for database; sleep 2; done;' ]
@@ -54,6 +58,10 @@ spec:
       initContainers:
         - name: check-db-ready
           image: postgres:14
+{{- with .Values.postgresql.init.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+{{- end }}
           command: [ 'sh', '-c',
             'until pg_isready -h {{ .Values.postgresql.external.uaaHost }} -p {{ .Values.postgresql.external.uaaPort }};
             do echo waiting for database; sleep 2; done;' ]
