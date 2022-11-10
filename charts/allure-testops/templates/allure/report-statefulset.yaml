@@ -89,6 +89,11 @@ spec:
           value: "http://{{ .Values.host }}"
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
           value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
+        - name: {{ .Values.build }}_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "jwtSecret"
 {{- end }}
 {{- if .Values.rabbitmq.enabled }}
         - name: SPRING_RABBITMQ_HOST
