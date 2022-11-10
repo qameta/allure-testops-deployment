@@ -89,11 +89,6 @@ spec:
           value: "http://{{ .Values.host }}"
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
           value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
-        - name: {{ .Values.build }}_JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "jwtSecret"
 {{- end }}
 {{- if .Values.rabbitmq.enabled }}
         - name: SPRING_RABBITMQ_HOST
@@ -226,6 +221,11 @@ spec:
           value: "{{ template "allure-testops.gateway.fullname" . }}"
         - name: ALLURE_EE_GATEWAY_SERVICE_PORT
           value: "{{ .Values.gateway.service.port }}"
+        - name: {{ .Values.build }}_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ $secret_name }}
+              key: "jwtSecret"
 {{- if eq .Values.postgresql.external.sslMode "require" }}
         - name: TLS_DB_ENDPOINTS
           value: "{{ .Values.postgresql.external.reportHost}}:{{ .Values.postgresql.external.reportPort }}"
