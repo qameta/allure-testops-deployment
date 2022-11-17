@@ -410,6 +410,7 @@ gateway:
 uaa:
   replicaCount: 1
   image: allure-uaa
+  maxDBConn: 7
   tolerations: []
   affinity: {}
   nodeSelector: {}
@@ -455,6 +456,8 @@ uaa:
 report:
   replicaCount: 1
   image: allure-report
+  maxDBConn: 10
+  maxConcurrency: 5
   tolerations: []
   affinity: {}
   nodeSelector: {}

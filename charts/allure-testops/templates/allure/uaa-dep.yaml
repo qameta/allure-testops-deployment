@@ -138,6 +138,8 @@ spec:
             secretKeyRef:
               name: {{ $secret_name }}
               key: uaaDbPass
+        - name: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
+          value: "{{ .Values.uaa.maxDBConn }}"
         - name: TZ
           value: "{{ .Values.allure.timeZone }}"
         - name: SERVER_SERVLET_CONTEXTPATH
