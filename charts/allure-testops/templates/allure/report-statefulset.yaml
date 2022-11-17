@@ -180,7 +180,7 @@ spec:
         - name: SPRING_RABBITMQ_VIRTUAL_HOST
           value: {{ .Values.rabbitmq.vhost }}
         - name: SPRING_RABBITMQ_LISTENER_SIMPLE_MAXCONCURRENCY
-          value: "{{ .Values.report.maxConcurrency }}""
+          value: "{{ .Values.report.maxConcurrency }}"
         - name: TZ
           value: "{{ .Values.allure.timeZone }}"
         - name: SERVER_SERVLET_CONTEXTPATH
