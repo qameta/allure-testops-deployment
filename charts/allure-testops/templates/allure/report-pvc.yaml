@@ -1,4 +1,4 @@
-{{- if .Values.fs.migration.enabled -}}
+{{- if eq .Values.fs.type "LOCAL" }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
