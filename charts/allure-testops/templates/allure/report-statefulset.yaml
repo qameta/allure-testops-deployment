@@ -255,13 +255,11 @@ spec:
         resources:
 {{ toYaml . | indent 10 }}
 {{- end }}
+{{- if eq .Values.fs.type "LOCAL" }}
         volumeMounts:
-{{- if eq .Values.fs.type "NFS" }}
           - mountPath: .Values.fs.mountPoint
             name: storage
-{{- end }}
       volumes:
-{{- if eq .Values.fs.type "NFS" }}
         - name: storage
           persistentVolumeClaim:
             claimName: {{ .Values.fs.pvc.claimName }}
