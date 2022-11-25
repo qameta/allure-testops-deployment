@@ -9,6 +9,8 @@ build: ALLURE
 username: admin
 password: admin
 
+cryptoPass: ChangeMePleaseDuringFirstInstall
+
 ## Security Context
 ## 65534 started by a user with lowest privilegies
 ## Openshift requires different range e.g. >= 1000620000
