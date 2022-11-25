@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.9.2
+version: 4.10.1
 
 ## Leave as is. This parameter is used for internal purposes
 build: ALLURE
@@ -9,6 +9,10 @@ build: ALLURE
 username: admin
 password: admin
 
+
+## This parameter needs to be updated and saved.
+## This parameter is used to encrypt sensitive information in the database.
+## If parameter is lost or updated, your integrations will stop working
 cryptoPass: ChangeMePleaseDuringFirstInstall
 
 ## Security Context
