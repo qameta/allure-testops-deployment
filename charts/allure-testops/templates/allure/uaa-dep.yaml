@@ -193,13 +193,13 @@ spec:
           value: "{{ .Values.allure.auth.ldap.user.searchFilter }}"
         - name: {{ .Values.build }}_LOGIN_LDAP_UIDATTRIBUTE
           value: "{{ .Values.allure.auth.ldap.uidAttribute }}"
+{{- if .Values.allure.auth.ldap.syncRoles }}
         - name: {{ .Values.build }}_LOGIN_LDAP_GROUPSEARCHBASE
           value: "{{ .Values.allure.auth.ldap.group.searchBase }}"
         - name: {{ .Values.build }}_LOGIN_LDAP_GROUPSEARCHFILTER
           value: "{{ .Values.allure.auth.ldap.group.searchFilter }}"
         - name: {{ .Values.build }}_LOGIN_LDAP_GROUPROLEATTRIBUTE
           value: "{{ .Values.allure.auth.ldap.group.roleAttribute }}"
-{{- if .Values.allure.auth.ldap.syncRoles }}
         - name: {{ .Values.build }}_LOGIN_LDAP_SYNCROLES
           value: "{{ .Values.allure.auth.ldap.syncRoles }}"
         - name: {{ .Values.build }}_LOGIN_LDAP_GROUPAUTHORITIES_ROLEUSERGROUPS
