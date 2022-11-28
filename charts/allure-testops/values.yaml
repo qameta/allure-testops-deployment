@@ -312,16 +312,17 @@ allure:
       referal: follow
       url: ldap://ldap.example.com:389
       user:
+        # dnPatterns must not be used with searchFilter
         dnPatterns: sAMAccountName={0}
         searchBase: dc=example,dc=com
         searchFilter: (&((objectClass=Person))(sAMAccountName={0}))
+      # Syncs User Role by Group membership on any login
+      syncRoles: true
+      uidAttribute: sAMAccountName
       group:
         searchBase: ou=qa,ou=Security Groups,dc=example,dc=com
         searchFilter: (&(objectClass=Group)(member={0}))
         roleAttribute: cn
-      # Syncs User Role by Group membership on any login
-      syncRoles: true
-      uidAttribute: sAMAccountName
       # Maps your LDAP groups on Allure Groups
       userGroupName: allure_users
       adminGroupName: allure_admins
