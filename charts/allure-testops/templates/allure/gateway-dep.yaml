@@ -82,6 +82,10 @@ spec:
 {{- else }}
         - name: SPRING_REDIS_HOST
           value: "{{ .Values.redis.host }}"
+        - name: SPRING_REDIS_PORT
+          value: "{{ .Values.redis.port }}"
+        - name: SPRING_REDIS_DATABASE
+          value: "{{ .Values.redis.database }}"
 {{- end }}
         - name: SPRING_REDIS_PASSWORD
           valueFrom:

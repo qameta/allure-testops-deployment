@@ -120,6 +120,8 @@ redis:
   enabled: true
   # External Redis Host
   host: redis.example.com
+  port: 6379
+  database: 0
   architecture: standalone
   auth:
     password: allure
@@ -127,7 +129,6 @@ redis:
     enabled: false
     masterSet: big_master
     nodes: []
-  master:
     persistence:
       enabled: false
     podLabels:
