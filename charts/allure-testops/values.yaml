@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.10.1
+version: 4.12.0
 
 ## Leave as is. This parameter is used for internal purposes
 build: ALLURE
@@ -369,7 +369,14 @@ allure:
       ACSLocation: https://<your-domain>/api/login/saml2/sso/crowd
       entityId: https://<testops>/api/login/saml2/service-provider-metadata/crowd
       identityProviderMetadataUri: https:///path/to/metadata.xml
-
+      syncRoles: false
+      firstNameAttribute: firstNameAttribute
+      lastNameAttribute: lastNameAttribute
+      emailAttribute: emailAttribute
+      groups:
+        groupRoleAttribute: groupRoleAttribute
+        roleUserGroups: roleUserGroups
+        roleAdminGroups: roleAdminGroups
 
 gateway:
   replicaCount: 1

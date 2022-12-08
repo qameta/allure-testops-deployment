@@ -230,9 +230,25 @@ spec:
         - name: {{ .Values.build }}_LOGIN_OPENID_DEFAULTROLE
           value: {{ .Values.allure.auth.defaultRole }}
 {{- end }}
-{{- if .Values.allure.auth.saml }}
+{{- if .Values.allure.auth.saml.enabled }}
         - name: {{ .Values.build }}_LOGIN_SAML2_DEFAULTROLE
           value: {{ .Values.allure.auth.defaultRole }}
+        - name: {{ .Values.build }}_LOGIN_SAML2_FIRSTNAMEATTRIBUTE
+          value: {{ .Values.allure.auth.saml.firstNameAttribute }}
+        - name: {{ .Values.build }}_LOGIN_SAML2_LASTNAMEATTRIBUTE
+          value: {{ .Values.allure.auth.saml.lastNameAttribute }}
+        - name: {{ .Values.build }}_LOGIN_SAML2_EMAILATTRIBUTE
+          value: {{ .Values.allure.auth.saml.emailAttribute }}
+{{- end }}
+{{- if .Values.allure.auth.saml.syncRoles }}
+        - name: {{ .Values.build }}_LOGIN_SAML2_SYNCROLES
+          value: "{{ .Values.allure.auth.saml.syncRoles }}"
+        - name: {{ .Values.build }}_LOGIN_SAML2_GROUPROLEATTRIBUTE
+          value: {{ .Values.allure.auth.saml.groups.groupRoleAttribute }}
+        - name: {{ .Values.build }}_LOGIN_SAML2_GROUPAUTHORITIES_ROLEUSERGROUPS
+          value: "{{ .Values.allure.auth.saml.groups.roleUserGroups }}"
+        - name: {{ .Values.build }}_LOGIN_SAML2_GROUPAUTHORITIES_ROLEADMINGROUPS
+          value: "{{ .Values.allure.auth.saml.groups.roleAdminGroups }}"
 {{- end }}
 {{- if .Values.smtp.enabled }}
         - name: SPRING_MAIL_HOST
