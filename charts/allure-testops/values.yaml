@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.12.0
+version: 4.13.0
 
 ## Leave as is. This parameter is used for internal purposes
 build: ALLURE
