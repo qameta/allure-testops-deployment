@@ -124,6 +124,10 @@ redis:
   architecture: standalone
   auth:
     password: allure
+  master:
+    persistence:
+      enabled: true
+      size: 32Gi
   sentinel:
     enabled: false
     masterSet: big_master
