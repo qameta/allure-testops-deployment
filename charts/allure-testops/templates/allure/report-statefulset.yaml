@@ -81,8 +81,13 @@ spec:
             value: ":{{ .Values.capacitor.port }}"
           - name: CACHE_TTL
             value: "{{ .Values.capacitor.cacheTTL }}"
+{{- if .Values.redis.enabled }}
           - name: REDIS_HOSTS
             value: "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
+{{- else }}
+          - name: REDIS_HOSTS
+            value: "{{ template "allure-testops.redis.fullname" . }}:{{ .Values.redis.port }}"
+{{- end }}
           - name: ENC_IV
             valueFrom:
               secretKeyRef:
