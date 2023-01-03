@@ -112,6 +112,11 @@ spec:
               secretKeyRef:
                 name: {{ $secret_name }}
                 key: "s3SecretKey"
+          - name: REDIS_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secret_name }}
+                key: "redisPass"
 {{- end }}
       - name: {{ template "allure-testops.report.fullname" . }}
         image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
