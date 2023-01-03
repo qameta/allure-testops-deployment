@@ -67,13 +67,53 @@ spec:
             'until pg_isready -h {{ .Values.postgresql.external.reportHost }} -p {{ .Values.postgresql.external.reportPort }};
             do echo waiting for database; sleep 2; done;' ]
 {{- end }}
+{{- $secret_name := include "allure-testops.secret.name" . }}
       containers:
+{{- if .Values.capacitor.enabled }}
+      - name: {{ template "allure-testops.report.fullname" . }}-capacitor
+        image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.capacitor.image }}:{{ .Values.capacitor.version | default "latest" }}"
+        imagePullPolicy: {{ .Values.registry.pullPolicy }}
+{{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+{{- end }}
+        env:
+          - name: APP_PORT
+            value: ":{{ .Values.capacitor.port }}"
+          - name: CACHE_TTL
+            value: "{{ .Values.capacitor.cacheTTL }}"
+          - name: REDIS_HOSTS
+            value: "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
+          - name: ENC_IV
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secret_name }}
+                key: "encIV"
+          - name: ENC_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secret_name }}
+                key: "encKey"
+          - name: S3_ENDPOINT
+            value: "{{ .Values.fs.s3.endpoint }}"
+          - name: S3_REGION
+            value: "{{ .Values.fs.s3.region }}"
+          - name: ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secret_name }}
+                key: "s3AccessKey"
+          - name: SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ $secret_name }}
+                key: "s3SecretKey"
+{{- end }}
       - name: {{ template "allure-testops.report.fullname" . }}
         image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.registry.pullPolicy }}
-        {{- if .Values.containerSecurityContext.enabled }}
+{{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
-        {{- end }}
+{{- end }}
         ports:
         - name: http
           containerPort: 8081
@@ -81,7 +121,7 @@ spec:
 {{- if not .Values.allure.manualConfig }}
         - name: SERVER_PORT
           value: "{{ .Values.report.service.port }}"
-{{- $secret_name := include "allure-testops.secret.name" . }}
+
         - name: {{ .Values.build }}_ENDPOINT
 {{- if .Values.network.tls.enabled }}
           value: "https://{{ .Values.host }}"
@@ -108,8 +148,13 @@ spec:
 {{- end }}
 {{- if eq .Values.fs.type "S3" }}
 {{- if .Values.fs.external }}
+{{- if .Values.capacitor.enabled }}
+        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
+          value: "http://localhost:{{ .Values.capacitor.port }}"
+{{- else }}
         - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
           value: "{{ .Values.fs.s3.endpoint }}"
+{{- end }}
         - name: {{ .Values.build }}_BLOBSTORAGE_S3_BUCKET
           value: "{{ .Values.fs.s3.bucket }}"
         - name: {{ .Values.build }}_BLOBSTORAGE_S3_REGION
