@@ -13,7 +13,7 @@ password: admin
 ## This parameter needs to be updated and saved.
 ## This parameter is used to encrypt sensitive information in the database.
 ## If parameter is lost or updated, your integrations will stop working
-cryptoPass: ChangeMePleaseDuringFirstInstall
+cryptoPass: <ChangeMePleaseDuringFirstDeployment>
 
 ## Security Context
 ## 65534 started by a user with lowest privilegies
@@ -35,18 +35,15 @@ registry:
   # default is docker.io
   repo: docker.io
   # Prefix with registry name
-  # slug for the registry, i.e. 'docker' for dl.qameta.io
   name: allure
-  # name of registry secret
+  # name (label) of registry secret
   imagePullSecret: qameta-secret
   pullPolicy: IfNotPresent
   auth:
     # provided by Qameta Software
-    # by default qametaaccess as username and random password provided by sales
-    username: foo
-    password: bar
-
-
+    # by default qametaaccess as username and a password (token) provided by sales
+    username: qametaaccess
+    password: <GetFrom sales at qameta.io>
 
 ###
 ## Strategy for updating Gateway & UAA components
@@ -61,7 +58,7 @@ strategy:
 # Do not enable unless you know what you're doing.
 ###
 externalSecrets:
-  enabled: true
+  enabled: false
 # Provide a custom name for externally-provided Secret
 #  name: ""
 
@@ -88,7 +85,7 @@ network:
     # domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.com"
 
   ###
-  ## OpenShift Route
+  ## OpenShift Route, skip if you aren't using OpenShift
   ##
   route:
     enabled: false
@@ -158,7 +155,7 @@ rabbitmq:
 postgresql:
   # If enabled ('true'), then Helm chart will deploy PostgreSQL database as part of the deployment
   # If set to 'false' the deployment will use dedicated PostgreSQL database server deployed in your infrastructure
-  enabled: true
+  enabled: false
   connectionTimeout: 60000
   auth:
     username: allure
@@ -231,8 +228,6 @@ aws:
   # Update this values with your real value of your Amazon Role
   arn: arn:aws:iam::195700002069:role/allure_s3 
 
-
-
 minio:
   enabled: true
   persistence:
@@ -286,9 +281,9 @@ smtp:
 allure:
   # No Settings from this helm chart will be applied except ENV. (For internal use)
   manualConfig: false
-  # Allows unregistered users to register
+  # Allows unregistered users to register via UI
   registrationEnabled: false
-  # Lets users bypass admin's registration approval
+  # Lets users bypass admin's registration approval if set to true (do not do it in production)
   autoApprove: false
   # Update your time zone accordingly to the real settings of your server env
   timeZone: "Europe/London"
@@ -307,7 +302,9 @@ allure:
     # Available options system / oidc / saml2 / ldap
     primary: system
     # Possible roles: ROLE_ADMIN, ROLE_USER, ROLE_AUDITOR
+    # set to ROLE_AUDITOR for better licence consumption control
     defaultRole: ROLE_USER
+    # do not configure LDAP without LDAP admin near you
     ldap:
       enabled: false
       auth:
@@ -317,17 +314,22 @@ allure:
       url: ldap://ldap.example.com:389
       user:
         # dnPatterns must not be used with searchFilter
-        dnPatterns: sAMAccountName={0}
+        # sAMAccountName is an example, your LDAP parameter could be different
+        # dnPatterns: sAMAccountName={0}
         searchBase: dc=example,dc=com
-        searchFilter: (&((objectClass=Person))(sAMAccountName={0}))
+        # in your LDAP instead uid could be a different parameter
+        searchFilter: (&((objectClass=Person))(uid={0}))
       # Syncs User Role by Group membership on any login
       syncRoles: true
-      uidAttribute: sAMAccountName
+      # in your LDAP it could be different
+      uidAttribute: uid
       group:
         searchBase: ou=qa,ou=Security Groups,dc=example,dc=com
-        searchFilter: (&(objectClass=Group)(member={0}))
+        # in your LDAP this search string will be differnt
+        searchFilter: (&(objectClass=Person)(uid={1}))
         roleAttribute: cn
       # Maps your LDAP groups on Allure Groups
+      # groups are created by LDAP admin and will have different names
       userGroupName: allure_users
       adminGroupName: allure_admins
     # OIDC is Generic Client Name. Don't worry about it's not Google/Gitlab/Github/Keycloak/etc...
@@ -525,6 +527,7 @@ report:
         initialDelaySeconds: 60
 
 # Capacitor is an experimental sidecar service for TestOps allowing to spread s3 bottleneck.
+# not yet available
 capacitor:
   enabled: false
   image: capacitor
