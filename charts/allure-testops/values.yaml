@@ -24,7 +24,7 @@ containerSecurityContext:
 
 ## your-domain.tld
 ## the real DNS name (FQDN) of the allure testops instance
-host: alure.host.name
+host: allure.host.name
 
 ## Registry Auth. Access to registry secrets can be obtained from QAMeta team
 registry:

@@ -131,8 +131,6 @@ spec:
 {{- if not .Values.allure.manualConfig }}
         - name: SERVER_PORT
           value: "{{ .Values.report.service.port }}"
-
-        - name: {{ .Values.build }}_ENDPOINT
 {{- if .Values.network.tls.enabled }}
         - name: {{ .Values.build }}_ENDPOINT
           value: "https://{{ .Values.host }}"
