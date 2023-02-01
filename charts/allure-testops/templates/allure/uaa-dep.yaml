@@ -81,14 +81,15 @@ spec:
 {{- if not .Values.allure.manualConfig }}
         - name: SERVER_PORT
           value: "{{ .Values.uaa.service.port }}"
-        - name: {{ .Values.build }}_ENDPOINT
 {{- if .Values.network.tls.enabled }}
+        - name: {{ .Values.build }}_ENDPOINT
           value: "https://{{ .Values.host }}"
 {{- else }}
+        - name: {{ .Values.build }}_ENDPOINT
           value: "http://{{ .Values.host }}"
+{{- end }}
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
           value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
-{{- end }}
 {{- if .Values.postgresql.enabled }}
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/uaa"

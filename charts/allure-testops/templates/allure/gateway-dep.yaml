@@ -60,6 +60,13 @@ spec:
           value: "{{ .Values.gateway.service.port }}"
         - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
           value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
+{{- if .Values.network.tls.enabled }}
+        - name: {{ .Values.build }}_ENDPOINT
+          value: "https://{{ .Values.host }}"
+{{- else }}
+        - name: {{ .Values.build }}_ENDPOINT
+          value: "http://{{ .Values.host }}"
+{{- end }}
 {{- range $name, $value := .Values.gateway.env.open }}
         - name: {{ $name | quote }}
           value: {{ $value | quote }}
