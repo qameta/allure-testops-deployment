@@ -10,10 +10,11 @@ username: admin
 password: admin
 
 
-## This parameter needs to be updated and saved.
-## This parameter is used to encrypt sensitive information in the database.
-## If parameter is lost or updated, your integrations will stop working
+## These parameters needs to be updated and saved.
+## These parameters is used to encrypt sensitive information in the database.
+## If parameters is lost or updated, your integrations will stop working
 cryptoPass: <ChangeMePleaseDuringFirstDeployment>
+jwtSecret: <ChangeMeEither>
 
 ## Security Context
 ## 65534 started by a user with lowest privilegies
