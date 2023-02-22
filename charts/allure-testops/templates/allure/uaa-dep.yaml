@@ -208,14 +208,6 @@ spec:
         - name: {{ .Values.build }}_LOGIN_LDAP_GROUPAUTHORITIES_ROLEADMINGROUPS
           value: "{{ .Values.allure.auth.ldap.adminGroupName }}"
 {{- end }}
-{{- if .Values.allure.auth.oidc.syncRoles }}
-        - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
-          value: "{{ .Values.allure.auth.oidc.syncRoles }}"
-        - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEUSERGROUPS
-          value: "{{ .Values.allure.auth.oidc.userGroupName }}"
-        - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEADMINGROUPS
-          value: "{{ .Values.allure.auth.oidc.adminGroupName }}"
-{{- end }}
         - name: {{ .Values.build }}_LOGIN_LDAP_USERDN
           valueFrom:
             secretKeyRef:
@@ -230,6 +222,14 @@ spec:
 {{ if .Values.allure.auth.oidc }}
         - name: {{ .Values.build }}_LOGIN_OPENID_DEFAULTROLE
           value: {{ .Values.allure.auth.defaultRole }}
+{{- if .Values.allure.auth.oidc.syncRoles }}
+        - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
+          value: "{{ .Values.allure.auth.oidc.syncRoles }}"
+        - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEUSERGROUPS
+          value: "{{ .Values.allure.auth.oidc.userGroupName }}"
+        - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEADMINGROUPS
+          value: "{{ .Values.allure.auth.oidc.adminGroupName }}"
+{{- end }}
 {{- end }}
 {{- if .Values.allure.auth.saml.enabled }}
         - name: {{ .Values.build }}_LOGIN_SAML2_DEFAULTROLE
