@@ -222,6 +222,8 @@ spec:
 {{ if .Values.allure.auth.oidc }}
         - name: {{ .Values.build }}_LOGIN_OPENID_DEFAULTROLE
           value: {{ .Values.allure.auth.defaultRole }}
+        - name: {{ .Values.build }}_LOGIN_OPENID_GROUPROLEATTRIBUTE
+          value: {{ .Values.allure.auth.oidc.roleAttribute }}
 {{- if .Values.allure.auth.oidc.syncRoles }}
         - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
           value: "{{ .Values.allure.auth.oidc.syncRoles }}"

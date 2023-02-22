@@ -336,6 +336,8 @@ allure:
     # OIDC is Generic Client Name. Don't worry about it's not Google/Gitlab/Github/Keycloak/etc...
     oidc:
       enabled: false
+      # This param is responsible for matching group role attribute
+      roleAttribute: role
       client:
         # Your client name, for example Okta
         name: Google Auth
