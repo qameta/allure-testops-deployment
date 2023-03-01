@@ -481,6 +481,7 @@ report:
   image: allure-report
   maxDBConn: 10
   maxConcurrency: 5
+  maxS3Concurrency: 200
   tolerations: []
   affinity: {}
   nodeSelector: {}
