@@ -158,7 +158,7 @@ spec:
 {{- end }}
 {{- if eq .Values.fs.type "S3" }}
         - name: {{ .Values.build }}_BLOBSTORAGE_MAXCONCURRENCY
-          value: {{ .Values.report.maxS3Concurrency }}
+          value: "{{ .Values.report.maxS3Concurrency }}"
 {{- if .Values.fs.external }}
 {{- if .Values.capacitor.enabled }}
         - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
