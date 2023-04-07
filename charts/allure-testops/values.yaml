@@ -321,7 +321,7 @@ allure:
         # in your LDAP instead uid could be a different parameter
         searchFilter: (&((objectClass=Person))(uid={0}))
       # Syncs User Role by Group membership on any login
-      syncRoles: true
+      syncRoles: false
       # in your LDAP it could be different
       uidAttribute: uid
       group:
@@ -366,7 +366,7 @@ allure:
       # example (https://your-subdomain.oktapreview.com/oauth2/v1/keys)
       jwksURI:
       # Syncs User Role by Group membership on any login
-      syncRoles: true
+      syncRoles: false
       # Maps your OIDC groups on Allure Groups
       userGroupName: allure_users
       adminGroupName: allure_admins
