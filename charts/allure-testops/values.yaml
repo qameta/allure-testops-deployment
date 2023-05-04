@@ -3,6 +3,8 @@
 ## this is Allure TestOps release to be deployed
 version: 4.14.0
 
+releaseName: allure-testops
+
 ## Leave as is. This parameter is used for internal purposes
 build: ALLURE
 ## Credentials for accessing AllureTestOps as Admin on default auth scheme
@@ -114,7 +116,10 @@ network:
 # Redis Config
 redis:
   # Set to 'false' if you have Redis deployed in your infrastructure and you are allowed to use it with Allure TestOps
-  enabled: true
+  enabled: false
+  keyDB: true
+  # KeyDb Threads
+  threads: 2
   # External Redis Host
   host: redis.example.com
   port: 6379
@@ -180,13 +185,10 @@ postgresql:
         init.sql: |
           CREATE DATABASE uaa TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
           CREATE DATABASE report TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
-  persistence:
-    size: 20Gi
+    persistence:
+      size: 20Gi
   init:
     resources:
-      limits:
-        cpu: 1
-        memory: 128Mi
       requests:
         cpu: 100m
         memory: 128Mi

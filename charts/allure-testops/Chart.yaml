@@ -21,18 +21,18 @@ maintainers:
 
 dependencies:
   - name: rabbitmq
-    version: 10.1.14
+    version: 11.14.3
     repository: https://charts.bitnami.com/bitnami
     condition: rabbitmq.enabled
   - name: postgresql
-    version: 11.6.16
+    version: 12.4.2
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
   - name: redis
-    version: 17.0.1
+    version: 17.10.1
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
   - name: minio
-    version: 11.7.9
+    version: 12.4.2
     repository: https://charts.bitnami.com/bitnami
     condition: minio.enabled

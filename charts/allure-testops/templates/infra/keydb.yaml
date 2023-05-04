@@ -1,0 +1,104 @@
+---
+{{- if .Values.redis.keyDB }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "allure-testops.redis.fullname" . }}
+  labels:
+    app: {{ template "allure-testops.redis.fullname" . }}
+    version: v1
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ template "allure-testops.redis.fullname" . }}
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: {{ template "allure-testops.redis.fullname" . }}
+        version: v1
+    spec:
+      tolerations:
+{{ toYaml .Values.redis.master.tolerations | indent 8 }}
+{{- if .Values.gateway.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.redis.master.nodeSelector | indent 8 }}
+{{- end }}
+      containers:
+        - name: {{ template "allure-testops.redis.fullname" . }}
+          image: "eqalpha/keydb:x86_64_v6.3.2"
+          imagePullPolicy: {{ .Values.registry.pullPolicy }}
+          command: ["keydb-server"]
+          args:
+            - "/etc/keydb/redis.conf"
+            - "--bind 0.0.0.0"
+            - "--port {{ .Values.redis.port }}"
+            - "--server-threads 2"
+            - "--masterauth {{ .Values.redis.auth.password }}"
+            - "--requirepass {{ .Values.redis.auth.password }}"
+          ports:
+            - name: http-redis
+              containerPort: {{ .Values.redis.port }}
+{{- $secret_name := include "allure-testops.secret.name" . }}
+          env:
+            - name: REDIS_PORT
+              value: "{{ .Values.redis.port }}"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "redisPass"
+          volumeMounts:
+            - name: {{ template "allure-testops.redis.fullname" . }}
+              mountPath: "/data"
+      volumes:
+        - name: {{ template "allure-testops.redis.fullname" . }}
+          persistentVolumeClaim:
+            claimName: {{ template "allure-testops.redis.fullname" . }}
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "allure-testops.redis.fullname" . }}
+  labels:
+    app: {{ template "allure-testops.redis.fullname" . }}
+    version: v1
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  storageClassName: {{ .Values.redis.master.persistence.storageClass }}
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: {{ .Values.redis.master.persistence.size | quote }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "allure-testops.redis.fullname" . }}
+  labels:
+    app: {{ template "allure-testops.redis.fullname" . }}
+    version: v1
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ template "allure-testops.redis.fullname" . }}
+    version: v1
+  ports:
+    - name: http
+      targetPort: {{ .Values.redis.port }}
+      port: {{ .Values.redis.port }}
+
+{{- end }}

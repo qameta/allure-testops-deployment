@@ -83,7 +83,7 @@ spec:
               name: {{ $secret_name }}
               key: "redisPass"
 {{- else }}
-{{- if .Values.redis.enabled }}
+{{- if or (eq .Values.redis.enabled true) (eq .Values.redis.keyDB true) }}
         - name: SPRING_REDIS_HOST
           value: "{{ template "allure-testops.redis.fullname" . }}"
 {{- else }}
