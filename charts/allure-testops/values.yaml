@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.14.0
+version: 4.16.4
 
 releaseName: allure-testops
 
@@ -64,6 +64,18 @@ externalSecrets:
   enabled: false
 # Provide a custom name for externally-provided Secret
 #  name: ""
+
+###
+# AWS Injection (STS)
+# Make Sure you have RBAC enabled
+# Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
+###
+aws:
+  # This is to be updated to 'true', otherwise will be ignored
+  enabled: false
+  # Your AWS ARN
+  # Update this values with your real value of your Amazon Role
+  arn: arn:aws:iam::195700002069:role/allure_s3
 
 network:
   # Nginx Ingress
@@ -143,20 +155,21 @@ redis:
 
 # RabbitMQ Config
 rabbitmq:
-  # If set to 'true', then Helm chart will deploy RabbitMQ
+  # If set to 'true', then Helm chart will deploy RabbitMQ and external values will be ignored
   # Update to 'false' if you have RabbitMQ deployed in your infrastructure and you are allowed to use it with Allure TestOps
   enabled: true
-  host: mq.example.com
-  port: 5672
-  vhost: "/"
   auth:
     # If you have dedicated RabbitMQ server, then take this value from dedicated RabbitMQ settings
     # Otherwise set to your own random string
     erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx
-    # Credentials for RabbitMQ
+    # Credentials for built-in RabbitMQ
     username: allure
     password: allure
   resources: {}
+  external:
+    # In case of cluster, add hosts separated by comma e.g.: amqps://mq.example.com:5672,amqps://mq1.example.com:5672
+    hosts: amqps://mq.example.com:5672
+    vhost: "/"
 
 postgresql:
   # If enabled ('true'), then Helm chart will deploy PostgreSQL database as part of the deployment
@@ -178,7 +191,7 @@ postgresql:
     reportDbName: report
     reportUsername: report
     reportPassword: secret
-  # this works for postgres in the pod only. For external DB you need to execute these manually when creating the databases
+  # This works for built-in postgres only provided with this chart. For external DB you need to execute these manually when creating the databases
   primary:
     initdb:
       scripts:
@@ -187,57 +200,58 @@ postgresql:
           CREATE DATABASE report TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
     persistence:
       size: 20Gi
+  # Init Container Job. It's responsible for assuring connection between TestOps pod and Database
+  # It also works on external databases
   init:
+    # If you have private registry it should look like reg.domain.tld/postgres:14
+    image: postgres:14
     resources:
       requests:
         cpu: 100m
         memory: 128Mi
 
-# Local FS is NOT disabled for migration purpose. Please bear in mind that primary FS for allure is S3
+# File System Block.
+# TestOps works with S3 and CSI storage backends
+# S3 is preferable. The best option is using SaaS S3 AWS or other S3 comparable services. If SaaS is not available, use
+# Minio, built in by default.
+# Local storage is for advanced use. First make sure you have ReadWriteMany CSI Driver Installed and SetUp
+# (https://kubernetes-csi.github.io/docs/drivers.html). (Allows working with NFS, CephFS,...)
 fs:
-  # Supported: S3, LOCAL, NFS
+  # Supported: S3, CSI
   type: "S3"
-  external: false
-  pathstyle: true
-  migration:
-    # should be false all the time except the 1 migration from FS to S3
-    enabled: false
-    # for FS only
-    directory: /opt/allure/report/storage
   s3:
+    # Set true for SaaS or leave false for Minio
+    external: false
     # the URL should be like https://s3.region.amazonaws.com if your region is not us-east-1
     endpoint: https://s3.amazonaws.com
+    # Some providers have path style access like s3.provider.com/bucket-name others have domain style
+    # Like bucket-name.s3.provider.com. Choose your provider's
+    pathstyle: false
     bucket: allure-testops
     region: us-east-1
     # If you run Allure Testops in AWS EKS you don't need stating accessKey & secretKey
     accessKey: foo
     secretKey: bar
-  # Required only if type is Local or NFS
-  mountPoint: /storage
-  # Create NFS Volume First as PV
-  # needed for migration purposes only, do not change it if you are not migratung the data from PVC
-  pvc:
-    claimName: ""
+  csiStorage:
+    storageClass: ""
+    existingVolumeName: ""
+    mountPoint: /data
+    accessMode: ReadWriteMany
+    size: 50Gi
+    annotations: {}
+    finalizers:
+      - kubernetes.io/pvc-protection
 
-###
-# AWS Injection (STS)
-# Make Sure you have RBAC enabled
-# Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
-###
-aws:
-  # This is to be updated to 'true', otherwise will be ignored
-  enabled: false
-  # Your AWS ARN 
-  # Update this values with your real value of your Amazon Role
-  arn: arn:aws:iam::195700002069:role/allure_s3 
 
+# Minio is default storage for deploying in K8S. Please consider using SaaS S3 from Cloud providers.
+# if you use External S3 please disable minio
 minio:
   enabled: true
   persistence:
     enabled: true
     storageClass: ""
     size: 200Gi
-
+  # Those credentials are applied only if minio is enabled
   auth:
     rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
     rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
@@ -247,18 +261,7 @@ minio:
       api: 9000
   defaultBuckets: allure-testops
   defaultRegion: qameta-0
-  gateway:
-    # Turns minio into S3 Proxy. The only way to make Allure Testops work on Azure
-    # Useful for self-hosted Ceph because acting as caching proxy
-    enabled: false
-    type: s3 # Could be azure, gcs, nas, s3 Details @ https://artifacthub.io/packages/helm/bitnami/minio Gateway
-    replicaCount: 1
-    auth:
-      s3:
-        serviceEndpoint: https://s3.amazonaws.com # Any S3 EP except azure, gcs
-        # Note. Don't use these credentials if you run on Amazon AWS. Use ARN instead
-        accessKey: foo
-        secretKey: bar
+
 
 certificates:
   # In case you use self-signed certificates, state all endpoints except for database
@@ -313,8 +316,10 @@ allure:
       auth:
         user: user
         pass: pass
-      referal: follow
+      referral: follow
       url: ldap://ldap.example.com:389
+      usernamesToLowercase: true
+      passwordAttribute: userPassword
       user:
         # dnPatterns must not be used with searchFilter
         # sAMAccountName is an example, your LDAP parameter could be different
@@ -372,7 +377,6 @@ allure:
       # Maps your OIDC groups on Allure Groups
       userGroupName: allure_users
       adminGroupName: allure_admins
-
     saml:
       enabled: false
       provider: crowd
@@ -402,18 +406,14 @@ gateway:
     port: 8080
   env:
     open:
-      JAVA_TOOL_OPTIONS: >
-        -XX:+UseG1GC
-        -XX:+UseStringDeduplication
-        -Dsun.jnu.encoding=UTF-8
-        -Dfile.encoding=UTF-8
+  # Minimum TestOps Gateway Memory is 256MB
   resources:
     requests:
-      memory: 1Gi
+      memory: 512Mi
       cpu: 1
     limits:
-      memory: 2Gi
-      cpu: 2
+      memory: 512Mi
+      cpu: 1
   probes:
     enabled: true
     liveness:
@@ -431,7 +431,6 @@ gateway:
         failureThreshold: 3
         initialDelaySeconds: 25
 
-
 uaa:
   replicaCount: 1
   image: allure-uaa
@@ -447,18 +446,14 @@ uaa:
     port: 8082
   env:
     open:
-      JAVA_TOOL_OPTIONS: >
-        -XX:+UseG1GC
-        -XX:+UseStringDeduplication
-        -Dsun.jnu.encoding=UTF-8
-        -Dfile.encoding=UTF-8
   # Considering resource planning bear in mind that many pods is good but DB connections are expensive
+  # Minimum TestOps UAA Memory is 512Mi
   resources:
     requests:
       memory: 1Gi
-      cpu: 500m
+      cpu: 1
     limits:
-      memory: 2Gi
+      memory: 1Gi
       cpu: 1
   probes:
     # Disable them during updates involving DB migrations
@@ -484,6 +479,9 @@ report:
   maxDBConn: 10
   maxConcurrency: 5
   maxS3Concurrency: 200
+  uploads:
+    parseConsumers: 10
+    storeConsumers: 2
   tolerations: []
   affinity: {}
   nodeSelector: {}
@@ -493,20 +491,10 @@ report:
     co.elastic.logs/multiline.negate: "true"
   service:
     port: 8081
-  persistence:
-    accessMode: ReadWriteOnce
-    size: 10Gi
-    annotations: {}
-    finalizers:
-      - kubernetes.io/pvc-protection
   env:
     open:
-      JAVA_TOOL_OPTIONS: >
-        -XX:+UseG1GC
-        -XX:+UseStringDeduplication
-        -Dsun.jnu.encoding=UTF-8
-        -Dfile.encoding=UTF-8
   # Considering resource planning bear in mind that many pods is good but DB connections are expensive
+  # Minimum TestOps Report Memory is 512Mi
   resources:
     requests:
       memory: 3Gi

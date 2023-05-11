@@ -44,281 +44,172 @@ spec:
       nodeSelector:
 {{ toYaml .Values.report.nodeSelector | indent 8 }}
 {{- end }}
-{{- if .Values.postgresql.enabled }}
       initContainers:
-        - name: check-db-ready
-          image: postgres:14
+        - name: db-readiness-check
+          image: {{ .Values.postgresql.init.image | quote }}
 {{- with .Values.postgresql.init.resources }}
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
           command: [ 'sh', '-c',
-            'until pg_isready -h {{ template "allure-testops.postgresql.fullname" . }} -p 5432;
+            'until pg_isready -h {{ template "reportDBHost" . }} -p {{ template "reportDBPort" . }};
              do echo waiting for database; sleep 2; done;' ]
-{{- else }}
-      initContainers:
-        - name: check-db-ready
-          image: postgres:14
-{{- with .Values.postgresql.init.resources }}
-          resources:
-{{ toYaml . | indent 12 }}
-{{- end }}
-          command: [ 'sh', '-c',
-            'until pg_isready -h {{ .Values.postgresql.external.reportHost }} -p {{ .Values.postgresql.external.reportPort }};
-            do echo waiting for database; sleep 2; done;' ]
-{{- end }}
 {{- $secret_name := include "allure-testops.secret.name" . }}
       containers:
 {{- if .Values.capacitor.enabled }}
-      - name: {{ template "allure-testops.report.fullname" . }}-capacitor
-        image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.capacitor.image }}:{{ .Values.capacitor.version | default "latest" }}"
-        imagePullPolicy: {{ .Values.registry.pullPolicy }}
+        - name: {{ template "allure-testops.report.fullname" . }}-capacitor
+          image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.capacitor.image }}:{{ .Values.capacitor.version | default "latest" }}"
+          imagePullPolicy: {{ .Values.registry.pullPolicy }}
 {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
 {{- end }}
-        env:
-          - name: APP_PORT
-            value: ":{{ .Values.capacitor.port }}"
-          - name: CACHE_TTL
-            value: "{{ .Values.capacitor.cacheTTL }}"
+          env:
+            - name: APP_PORT
+              value: ":{{ .Values.capacitor.port }}"
+            - name: CACHE_TTL
+              value: "{{ .Values.capacitor.cacheTTL }}"
 {{- if .Values.redis.enabled }}
-          - name: REDIS_HOSTS
-            value: "{{ template "allure-testops.redis.fullname" . }}:{{ .Values.redis.port }}"
+            - name: REDIS_HOSTS
+              value: "{{ template "allure-testops.redis.fullname" . }}:{{ .Values.redis.port }}"
 {{- else }}
-          - name: REDIS_HOSTS
-            value: "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
+            - name: REDIS_HOSTS
+              value: "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
 {{- end }}
-          - name: ENC_IV
-            valueFrom:
-              secretKeyRef:
-                name: {{ $secret_name }}
-                key: "encIV"
-          - name: ENC_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ $secret_name }}
-                key: "encKey"
-          - name: S3_ENDPOINT
-            value: "{{ .Values.fs.s3.endpoint }}"
-          - name: S3_REGION
-            value: "{{ .Values.fs.s3.region }}"
-          - name: ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ $secret_name }}
-                key: "s3AccessKey"
-          - name: SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ $secret_name }}
-                key: "s3SecretKey"
-          - name: REDIS_PASS
-            valueFrom:
-              secretKeyRef:
-                name: {{ $secret_name }}
-                key: "redisPass"
+            - name: ENC_IV
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "encIV"
+            - name: ENC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "encKey"
+            - name: S3_ENDPOINT
+              value: "{{ .Values.fs.s3.endpoint }}"
+            - name: S3_REGION
+              value: "{{ .Values.fs.s3.region }}"
+            - name: ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "s3AccessKey"
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "s3SecretKey"
+            - name: REDIS_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "redisPass"
 {{- end }}
-      - name: {{ template "allure-testops.report.fullname" . }}
-        image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.registry.pullPolicy }}
+        - name: {{ template "allure-testops.report.fullname" . }}
+          image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.registry.pullPolicy }}
 {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
 {{- end }}
-        ports:
-        - name: http
-          containerPort: 8081
-        env:
+          ports:
+            - name: http
+              containerPort: {{ .Values.report.service.port }}
+          env:
 {{- if not .Values.allure.manualConfig }}
-        - name: SERVER_PORT
-          value: "{{ .Values.report.service.port }}"
-{{- if .Values.network.tls.enabled }}
-        - name: {{ .Values.build }}_ENDPOINT
-          value: "https://{{ .Values.host }}"
-{{- else }}
-        - name: {{ .Values.build }}_ENDPOINT
-          value: "http://{{ .Values.host }}"
-{{- end }}
-        - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI
-          value: "http://{{ template "allure-testops.gateway.fullname" . }}:{{ .Values.gateway.service.port }}/.well-known/jwks.json"
-{{- if .Values.rabbitmq.enabled }}
-        - name: SPRING_RABBITMQ_HOST
-          value: "{{ template "allure-testops.rabbitmq.fullname" . }}"
-{{- else }}
-        - name: SPRING_RABBITMQ_HOST
-          value: "{{ .Values.rabbitmq.host }}"
-{{- end }}
-        - name: SPRING_RABBITMQ_PORT
-          value: "{{ .Values.rabbitmq.port }}"
-{{- if .Values.postgresql.enabled }}
-        - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://{{ template "allure-testops.postgresql.fullname" . }}/report"
-{{- else }}
-        - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://{{ .Values.postgresql.external.reportHost }}:{{ .Values.postgresql.external.reportPort }}/{{ .Values.postgresql.external.reportDbName }}?sslmode={{ .Values.postgresql.external.sslMode}}"
-{{- end }}
+            - name: SERVER_PORT
+              value: "{{ .Values.report.service.port }}"
+{{- include "renderCommonEnvs" . | indent 10 }}
+{{- include "renderCrypto" . | indent 10 }}
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ template "renderJavaOpts" .Values.report.resources.limits.memory }}
+            - name: SPRING_RABBITMQ_ADDRESSES
+              value: {{ template "rabbitHost" . }}
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://{{ template "reportDBHost" . }}:{{ template "reportDBPort" . }}/{{ template "reportDBName" . }}?sslmode={{ template "postgresSSL" . }}"
 {{- if eq .Values.fs.type "S3" }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_MAXCONCURRENCY
-          value: "{{ .Values.report.maxS3Concurrency }}"
-{{- if .Values.fs.external }}
-{{- if .Values.capacitor.enabled }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
-          value: "http://localhost:{{ .Values.capacitor.port }}"
+            - name: {{ .Values.build }}_BLOBSTORAGE_TYPE
+              value: S3
+{{- include "renderS3Envs" . | indent 10 }}
 {{- else }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
-          value: "{{ .Values.fs.s3.endpoint }}"
+            - name: {{ .Values.build }}_BLOBSTORAGE_TYPE
+              value: FILE_SYSTEM
+            - name: {{ .Values.build }}_BLOBSTORAGE_FILESYSTEM_DIRECTORY
+              value: "{{ .Values.fs.csiStorage.mountPoint }}"
 {{- end }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_BUCKET
-          value: "{{ .Values.fs.s3.bucket }}"
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_REGION
-          value: "{{ .Values.fs.s3.region }}"
-{{- else }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ENDPOINT
-          value: "http://{{ template "allure-testops.minio.fullname" . }}:{{ .Values.minio.service.ports.api }}"
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_BUCKET
-          value: "{{ .Values.minio.defaultBuckets }}"
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_REGION
-          value: "{{ .Values.minio.defaultRegion }}"
-{{- end }}
-{{- if not .Values.aws.enabled }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_PATHSTYLEACCESS
-          value: "{{ .Values.fs.pathstyle }}"
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_ACCESSKEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "s3AccessKey"
-        - name: {{ .Values.build }}_BLOBSTORAGE_S3_SECRETKEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "s3SecretKey"
-{{- end }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_TYPE
-          value: S3
-{{- else }}
-        - name: {{ .Values.build }}_BLOBSTORAGE_TYPE
-          value: FILE_SYSTEM
-        - name: {{ .Values.build }}_BLOBSTORAGE_FILESYSTEM_DIRECTORY
-          value: "{{ .Values.fs.mountPoint }}"
-{{- end }}
-{{- range $name, $value := .Values.report.env.open }}
-        - name: {{ $name | quote }}
-          value: {{ $value | quote }}
-{{- end }}
-        - name: {{ .Values.build }}_CRYPTO_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "cryptoPass"
-        - name: SPRING_DATASOURCE_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "reportDbUser"
-        - name: SPRING_DATASOURCE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "reportDbPass"
-        - name: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
-          value: "{{ .Values.report.maxDBConn }}"
-        - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
-          value: "{{ .Values.postgresql.connectionTimeout }}"
-        - name: SPRING_RABBITMQ_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "rabbitUser"
-        - name: SPRING_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "rabbitPass"
-        - name: SPRING_RABBITMQ_VIRTUAL_HOST
-          value: {{ .Values.rabbitmq.vhost }}
-        - name: SPRING_RABBITMQ_LISTENER_SIMPLE_MAXCONCURRENCY
-          value: "{{ .Values.report.maxConcurrency }}"
-        - name: TZ
-          value: "{{ .Values.allure.timeZone }}"
-        - name: SERVER_SERVLET_CONTEXTPATH
-          value: "{{ .Values.allure.reportContextPath }}"
-        - name: SPRING_OUTPUT_ANSI_ENABLED
-          value: "never"
-        - name: LOGGING_LEVEL_IO_QAMETA_ALLURE
-          value: "{{ .Values.allure.logging }}"
-        - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY
-          value: "{{ .Values.allure.logging }}"
-        - name: LOGGING_LEVEL_IO_QAMETA_ALLURE_REPORT_ISSUE_LISTENER
-          value: "error"
-        - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
-          value: "{{ .Values.allure.logging }}"
-        - name: LOGGING_LEVEL_COM_ZAXXER_HIKARI
-          value: "{{ .Values.allure.logging }}"
-        - name: SPRING_PROFILES_ACTIVE
-          value: kubernetes
-        - name: MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED
-          value: 'true'
-        - name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
-          value: "{{ .Values.allure.management.expose }}"
-        - name: MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIME-TO-LIVE
-          value: "{{ .Values.allure.management.cacheTTL }}"
-        - name: MANAGEMENT_HEALTH_DISKSPACE_ENABLED
-          value: "false"
-        - name: MANAGEMENT_HEALTH_KUBERNETES_ENABLED
-          value: "false"
-        - name: SPRING_CLOUD_DISCOVERY_CLIENT_HEALTH_INDICATOR_ENABLED
-          value: "false"
-        - name: SERVER_ERROR_INCLUDE_STACKTRACE
-          value: "always"
-        - name: ALLURE_EE_REPORT_SERVICE_HOST
-          value: "{{ template "allure-testops.report.fullname" . }}"
-        - name: ALLURE_EE_REPORT_SERVICE_PORT
-          value: "{{ .Values.report.service.port }}"
-        - name: ALLURE_EE_UAA_SERVICE_HOST
-          value: "{{ template "allure-testops.uaa.fullname" . }}"
-        - name: ALLURE_EE_UAA_SERVICE_PORT
-          value: "{{ .Values.uaa.service.port }}"
-        - name: ALLURE_EE_GATEWAY_SERVICE_HOST
-          value: "{{ template "allure-testops.gateway.fullname" . }}"
-        - name: ALLURE_EE_GATEWAY_SERVICE_PORT
-          value: "{{ .Values.gateway.service.port }}"
-        - name: {{ .Values.build }}_JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: {{ $secret_name }}
-              key: "jwtSecret"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "reportDbUser"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "reportDbPass"
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE
+              value: "{{ .Values.report.maxDBConn }}"
+            - name: SPRING_DATASOURCE_HIKARI_CONNECTIONTIMEOUT
+              value: "{{ .Values.postgresql.connectionTimeout }}"
+            - name: SPRING_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "rabbitUser"
+            - name: SPRING_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "rabbitPass"
+            - name: SPRING_RABBITMQ_VIRTUAL_HOST
+              value: {{ .Values.rabbitmq.external.vhost }}
+            - name: SPRING_RABBITMQ_LISTENER_SIMPLE_MAXCONCURRENCY
+              value: "{{ .Values.report.maxConcurrency }}"
+            - name: SERVER_SERVLET_CONTEXTPATH
+              value: "{{ .Values.allure.reportContextPath }}"
+            - name: LOGGING_LEVEL_IO_QAMETA_ALLURE_REPORT_ISSUE_LISTENER
+              value: "error"
+            - name: LOGGING_LEVEL_COM_ZAXXER_HIKARI
+              value: "{{ .Values.allure.logging }}"
+            - name: ALLURE_UPLOAD_PARSE_CONSUMERSPERQUEUE
+              value: {{ .Values.report.uploads.parseConsumers | quote }}
+            - name: ALLURE_UPLOAD_STORE_CONSUMERSPERQUEUE
+              value: {{ .Values.report.uploads.storeConsumers | quote }}
 {{- if eq .Values.postgresql.external.sslMode "require" }}
-        - name: TLS_DB_ENDPOINTS
-          value: "{{ .Values.postgresql.external.reportHost}}:{{ .Values.postgresql.external.reportPort }}"
+            - name: TLS_DB_ENDPOINTS
+              value: "{{ .Values.postgresql.external.reportHost}}:{{ .Values.postgresql.external.reportPort }}"
 {{- end }}
 {{- if .Values.certificates.endpoints }}
-        - name: TLS_ENDPOINTS
-          value: "{{ .Values.certificates.endpoints }}"
+            - name: TLS_ENDPOINTS
+              value: "{{ .Values.certificates.endpoints }}"
+{{- end }}
+{{- range $name, $value := .Values.report.env.open }}
+            - name: {{ $name | quote }}
+              value: {{ $value | quote }}
 {{- end }}
 {{- end }}
 {{- if .Values.report.probes.enabled }}
-        livenessProbe:
-          httpGet:
-            path: {{ .Values.allure.reportContextPath }}management/health
-            port: http
-{{ toYaml .Values.report.probes.liveness.probe | indent 10 }}
-        readinessProbe:
-          httpGet:
-            path: {{ .Values.allure.reportContextPath }}management/health
-            port: http
-{{ toYaml .Values.report.probes.readiness.probe | indent 10 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.allure.reportContextPath }}management/health
+              port: http
+{{ toYaml .Values.report.probes.liveness.probe | indent 12 }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.allure.reportContextPath }}management/health
+              port: http
+{{ toYaml .Values.report.probes.readiness.probe | indent 12 }}
 {{- end }}
 {{- with .Values.report.resources }}
-        resources:
-{{ toYaml . | indent 10 }}
+          resources:
+{{ toYaml . | indent 12 }}
 {{- end }}
-{{- if eq .Values.fs.type "LOCAL" }}
-        volumeMounts:
-          - mountPath: .Values.fs.mountPoint
-            name: storage
+{{- if eq .Values.fs.type "CSI" }}
+          volumeMounts:
+            - mountPath: {{ .Values.fs.csiStorage.mountPoint }}
+              name: storage
       volumes:
         - name: storage
           persistentVolumeClaim:
-            claimName: {{ .Values.fs.pvc.claimName }}
+            claimName: {{ template "allure-testops.report.fullname" . }}
 {{- end }}
 

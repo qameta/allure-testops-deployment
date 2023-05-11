@@ -1,4 +1,4 @@
-{{- if eq .Values.fs.type "LOCAL" }}
+{{- if eq .Values.fs.type "CSI" }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -9,25 +9,23 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-{{- with .Values.report.persistence.annotations  }}
+{{- with .Values.fs.csiStorage.annotations  }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
-{{- with .Values.report.persistence.finalizers  }}
+{{- with .Values.fs.csiStorage.finalizers  }}
   finalizers:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
   accessModes:
-  - {{ .Values.report.persistence.accessMode | quote }}
+    - {{ .Values.fs.csiStorage.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.report.persistence.size | quote }}
-{{- if .Values.report.persistence.storageClass }}
-{{- if (eq "-" .Values.report.persistence.storageClass) }}
-  storageClassName: ""
+      storage: {{ .Values.fs.csiStorage.size | quote }}
+{{- if .Values.fs.csiStorage.existingVolumeName }}
+  volumeName: {{ .Values.fs.csiStorage.existingVolumeName }}
 {{- else }}
-  storageClassName: "{{ .Values.report.persistence.storageClass }}"
-{{- end }}
+  storageClassName: {{ .Values.fs.csiStorage.storageClass }}
 {{- end }}
 {{- end }}

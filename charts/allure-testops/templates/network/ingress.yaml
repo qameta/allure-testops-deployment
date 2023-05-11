@@ -3,9 +3,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ template "allure-ee.fullname" . }}
+  name: {{ template "allure-testops.fullname" . }}
   labels:
-    app: {{ template "allure-ee.fullname" . }}
+    app: {{ template "allure-testops.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"

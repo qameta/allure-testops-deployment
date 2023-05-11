@@ -3,7 +3,7 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ template "allure-ee.fullname" . }}
+  name: {{ template "allure-testops.fullname" . }}
 {{- if .Values.network.route.annotations }}
   annotations:
 {{ toYaml .Values.network.ingress.annotations | indent 4 }}

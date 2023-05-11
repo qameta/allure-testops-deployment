@@ -3,7 +3,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: {{ template "allure-ee.fullname" . }}
+  name: {{ template "allure-testops.fullname" . }}
 spec:
   selector:
 {{- with .Values.network.istio.gatewaySelector }}
@@ -33,10 +33,10 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: {{ template "allure-ee.fullname" . }}
+  name: {{ template "allure-testops.fullname" . }}
 spec:
   gateways:
-    - {{ template "allure-ee.fullname" . }}
+    - {{ template "allure-testops.fullname" . }}
   hosts:
     - {{ .Values.host }}
   http:
