@@ -88,7 +88,7 @@ spec:
             - name: {{ .Values.build }}_JWT_ACCESS_TOKEN_VALIDITY_SECONDS
               value: "{{ .Values.allure.sessionLifespan }}"
             - name: {{ .Values.build }}_SECURE
-              value: "{{ .Values.allure.secureCookies }}"
+              value: "{{ .Values.network.tls.enabled }}"
             - name: SPRING_SESSION_STORE_TYPE
               value: "REDIS"
 {{- if .Values.allure.auth.oidc.enabled }}
