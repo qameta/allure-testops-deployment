@@ -267,3 +267,11 @@
   {{- $memString := include "calculateMemory" $v }}
   {{- printf "-XX:AdaptiveSizePolicyWeight=50 -XX:+UseTLAB -XX:GCTimeRatio=15 -XX:MinHeapFreeRatio=40 -XX:MinHeapFreeRatio=70 %s" $memString | quote }}
 {{- end }}
+
+{{- define "getImageRegistry" }}
+{{- if .Values.registry.name }}
+  {{- printf "%s/%s/" .Values.registry.repo .Values.registry.name }}
+{{- else }}
+  {{- printf "%s/" .Values.registry.repo }}
+{{- end }}
+{{- end }}

@@ -55,7 +55,7 @@ spec:
              do echo waiting for database; sleep 2; done;' ]
       containers:
         - name: {{ template "allure-testops.uaa.fullname" . }}
-          image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.uaa.image }}:{{ .Values.version | default .Chart.AppVersion }}"
+          image: "{{ template "getImageRegistry" . }}{{ .Values.uaa.image }}:{{ .Values.version | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.registry.pullPolicy }}
 {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}

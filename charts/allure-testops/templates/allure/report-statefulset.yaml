@@ -106,7 +106,7 @@ spec:
                   key: "redisPass"
 {{- end }}
         - name: {{ template "allure-testops.report.fullname" . }}
-          image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
+          image: "{{ template "getImageRegistry" . }}{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.registry.pullPolicy }}
 {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
