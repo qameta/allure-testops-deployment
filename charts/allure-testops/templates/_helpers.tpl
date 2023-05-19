@@ -218,7 +218,7 @@
 {{- else }}
     value: {{ .Values.fs.s3.region}}
 {{- end }}
-{{- if not .Values.allure.manualConfig }}
+{{- if and (not .Values.allure.manualConfig) (not .Values.aws.enabled) }}
   - name: {{ .Values.build }}_BLOBSTORAGE_S3_ACCESSKEY
     valueFrom:
       secretKeyRef:
