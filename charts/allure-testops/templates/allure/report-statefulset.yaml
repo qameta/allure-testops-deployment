@@ -174,7 +174,7 @@ spec:
               value: {{ .Values.report.uploads.parseConsumers | quote }}
             - name: ALLURE_UPLOAD_STORE_CONSUMERSPERQUEUE
               value: {{ .Values.report.uploads.storeConsumers | quote }}
-{{- if eq .Values.postgresql.external.sslMode "require" }}
+{{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
             - name: TLS_DB_ENDPOINTS
               value: "{{ .Values.postgresql.external.reportHost}}:{{ .Values.postgresql.external.reportPort }}"
 {{- end }}
