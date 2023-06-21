@@ -221,6 +221,18 @@ spec:
                   name: {{ $secret_name }}
                   key: "licenseKey"
 {{- end }}
+{{- if .Values.subscriptionId }}
+            - name: {{ .Values.build }}_LICENSE_SUBSCRIPTIONID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "subId"
+            - name: {{ .Values.build }}_LICENSE_APITOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "licenceApiToken"
+{{- end }}
 {{- range $name, $value := .Values.uaa.env.open }}
             - name: {{ $name | quote }}
               value: {{ $value | quote }}

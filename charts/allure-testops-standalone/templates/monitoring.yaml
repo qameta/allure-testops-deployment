@@ -1,0 +1,58 @@
+{{- if .Values.monitoring.enabled }}
+{{- if .Values.monitoring.victoriaMetrics}}
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: allure-testops-monitor
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      app: {{ template "allure-testops-standalone.fullname" . }}
+      version: v1
+  endpoints:
+    - path: /management/prometheus
+      interval: 15s
+      scrapeTimeout: 1m
+      targetPort: {{ .Values.testops.service.gatewayPort }}
+    - path: /uaa/management/prometheus
+      interval: 15s
+      targetPort: {{ .Values.testops.service.uaaPort }}
+      scrapeTimeout: 1m
+    - path: /rs/management/prometheus
+      interval: 15s
+      targetPort: {{ .Values.testops.service.reportPort }}
+      scrapeTimeout: 1m
+
+{{- else }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "allure-testops-standalone.fullname" . }}-monitor
+  labels:
+    app: {{ template "allure-testops-standalone.fullname" . }}
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      app: {{ template "allure-testops-standalone.fullname" . }}
+      version: v1
+  endpoints:
+    - path: /management/prometheus
+      interval: 15s
+      scrapeTimeout: 1m
+      honorLabels: true
+    - path: /uaa/management/prometheus
+      interval: 15s
+      scrapeTimeout: 1m
+      port: http-uaa
+    - path: /rs/management/prometheus
+      interval: 15s
+      scrapeTimeout: 1m
+      port: http-rep
+{{- end }}
+{{- end }}

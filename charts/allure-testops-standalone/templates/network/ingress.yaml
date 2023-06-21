@@ -1,0 +1,37 @@
+---
+{{- if .Values.network.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "allure-testops-standalone.fullname" . }}
+  labels:
+    app: {{ template "allure-testops-standalone.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+{{- if .Values.network.ingress.annotations }}
+  annotations:
+{{ toYaml .Values.network.ingress.annotations | indent 4 }}
+{{- end }}
+spec:
+{{- if .Values.network.ingress.className }}
+  ingressClassName: {{ .Values.network.ingress.className }}
+{{- end }}
+  rules:
+    - host: {{ .Values.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ template "allure-testops-standalone.fullname" . }}
+                port:
+                  number: {{ .Values.testops.service.gatewayPort }}
+{{- if .Values.network.tls.enabled }}
+  tls:
+    - secretName: {{ .Values.network.tls.secretName }}
+      hosts:
+        - {{ .Values.host }}
+{{- end -}}
+{{- end -}}

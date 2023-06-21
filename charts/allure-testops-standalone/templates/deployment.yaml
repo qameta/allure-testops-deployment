@@ -1,0 +1,118 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "allure-testops-standalone.fullname" .}}
+  labels:
+    app: {{ template "allure-testops-standalone.name" . }}
+    version: v1
+    chart: {{ template "allure-testops-standalone.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.testops.replicas }}
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ template "allure-testops-standalone.fullname" . }}
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: {{ template "allure-testops-standalone.fullname" . }}
+        version: v1
+{{- if .Values.testops.annotations }}
+      annotations:
+{{- range $key, $value := .Values.testops.annotations }}
+        {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+    spec:
+{{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ template "allure-testops-standalone.fullname" . }}-sa
+{{- end }}
+      imagePullSecrets:
+        - name: {{ .Values.registry.imagePullSecret }}
+      tolerations:
+{{ toYaml .Values.testops.tolerations | indent 8 }}
+      nodeSelector:
+{{ toYaml .Values.testops.nodeSelector | indent 8 }}
+      affinity:
+{{ toYaml .Values.testops.affinity | indent 8 }}
+      initContainers:
+        - name: uaa-db-readiness-check
+          image: {{ .Values.postgresql.init.image | quote }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          command: [ 'sh', '-c',
+            'until pg_isready -h {{ template "uaaDBHost" . }} -p {{ template "uaaDBPort" . }};
+                   do echo waiting for database; sleep 2; done;' ]
+        - name: report-db-readiness-check
+          image: {{ .Values.postgresql.init.image | quote }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          command: [ 'sh', '-c',
+            'until pg_isready -h {{ template "reportDBHost" . }} -p {{ template "reportDBPort" . }};
+                   do echo waiting for database; sleep 2; done;' ]
+      containers:
+        - name: {{ template "allure-testops-standalone.fullname" . }}
+          image: "{{ template "getImageRegistry" . }}{{ .Values.testops.image }}:{{ .Values.version | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.registry.pullPolicy }}
+{{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+{{- end }}
+          ports:
+            - name: http-gtw
+              containerPort: {{ .Values.testops.service.gatewayPort }}
+            - name: http-uaa
+              containerPort: {{ .Values.testops.service.uaaPort }}
+            - name: http-rep
+              containerPort: {{ .Values.testops.service.reportPort }}
+          env:
+            - name: TZ
+              value: "{{ .Values.testops.timeZone }}"
+          livenessProbe:
+            httpGet:
+              path: /management/health
+              port: http-gtw
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /management/health
+              port: http-gtw
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+{{- with .Values.testops.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+{{- end }}
+          volumeMounts:
+            - name: gateway-secret
+              readOnly: true
+              mountPath: /opt/allure-testops/conf/gateway.properties
+              subPath: gateway.properties
+            - name: uaa-secret
+              readOnly: true
+              mountPath: /opt/allure-testops/conf/uaa.properties
+              subPath: uaa.properties
+            - name: report-secret
+              readOnly: true
+              mountPath: /opt/allure-testops/conf/report.properties
+              subPath: report.properties
+
+      volumes:
+        - name: gateway-secret
+          secret:
+            secretName: gateway-secret
+        - name: uaa-secret
+          secret:
+            secretName: uaa-secret
+        - name: report-secret
+          secret:
+            secretName: report-secret

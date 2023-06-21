@@ -1,0 +1,437 @@
+## there is no correlation between helm chart release and Allure TestOps release
+
+## this is Allure TestOps release to be deployed
+version: 4.16.7
+
+releaseName: allure-testops
+
+## Leave as is. This parameter is used for internal purposes
+build: ALLURE
+## Credentials for accessing AllureTestOps as Admin on default auth scheme
+username: admin
+password: admin
+
+## These parameters needs to be updated and saved.
+## These parameters is used to encrypt sensitive information in the database.
+## If parameters is lost or updated, your integrations will stop working
+cryptoPass: <ChangeMePleaseDuringFirstDeployment>
+jwtSecret: <ChangeMeEither>
+
+## Security Context
+## 65534 started by a user with lowest privilegies
+## Openshift requires different range e.g. >= 1000620000
+containerSecurityContext:
+  enabled: true
+  runAsUser: 65534
+
+## your-domain.tld
+## the real DNS name (FQDN) of the allure testops instance
+host: allure.host.name
+
+## Registry Auth. Access to registry secrets can be obtained from QAMeta team
+registry:
+  # Private registry or Proxy like Nexus
+  enabled: false
+  # Registry Domain like quay.io / docker.io / ghcr.io / ...
+  # registry to pull images from
+  # default is docker.io
+  repo: docker.io
+  # Prefix with registry name
+  name: allure
+  # name (label) of registry secret
+  imagePullSecret: qameta-secret
+  pullPolicy: IfNotPresent
+  auth:
+    # provided by Qameta Software
+    # by default qametaaccess as username and a password (token) provided by sales
+    username: qametaaccess
+    password: <GetFrom sales at qameta.io>
+
+###
+## Strategy for updating Gateway & UAA components
+###
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+
+###
+# Skip Kubernetes secret creation. It is for cases when Secret is created and managed by external means, for example using external-secrets
+# Do not enable unless you know what you're doing.
+###
+externalSecrets:
+  enabled: false
+# Provide a custom name for externally-provided Secret
+#  name: ""
+
+###
+# AWS Injection (STS)
+# Make Sure you have RBAC enabled
+# Ref: https://aws.amazon.com/blogs/opensource/introducing-fine-grained-iam-roles-service-accounts/
+###
+aws:
+  # This is to be updated to 'true', otherwise will be ignored
+  enabled: false
+  # Your AWS ARN
+  # Update this values with your real value of your Amazon Role
+  arn: arn:aws:iam::195700002069:role/allure_s3
+
+network:
+  # Nginx Ingress
+  ingress:
+    # Update if you are using nginx as ingress controller
+    enabled: false
+    className:
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+
+  ###
+  ## Istio Gateway
+  ## Prior to deployment, label Namespace with istio-injection=enabled to make Istio inject Envoy Sidecars
+  istio:
+    # To be enabled (set to true) if you are using istio
+    enabled: false
+    gatewaySelector:
+      istio: ingressgateway
+    # makes Allure TestOps accessible from Jira Plugin iFrame
+    # Update this with real Jira instance URL
+    # domain_exceptions: "https://jira.your-domain.io https://jira.your-domain.com"
+
+  ###
+  ## OpenShift Route, skip if you aren't using OpenShift
+  ##
+  route:
+    enabled: false
+    annotations: {}
+    tls: {}
+  # TLS Settings
+  tls:
+    # to be set to 'true' if SSL is to be used for your deployment
+    enabled: false
+    secretName: allure-tls # Secret with SSL termination secrets.
+    hstsEnabled: false
+  # Important! Qameta Team doesn't provide Certmanager itself, if you don't have one,
+  # install from https://cert-manager.io/docs/installation/ and create ClusterIssuer
+  # and provide Challenge type e.g. acme http-01 or dns-01
+  certmanager:
+    # To be set to 'true' if a certification manager to be used for the deployment
+    enabled: false
+    # It is important where certificate is located depending on your Ingress/Istio Gateway
+    # IstioGateway require secrets with tls certs to be located in istio-system ns
+    namespace: istio-system
+    # As Let's Encrypt is not the only provider, you may use your own.
+    issuerName: letsencrypt-issuer
+    issuerGroup: cert-manager.io
+
+# Redis Config
+redis:
+  # Set to 'false' if you have Redis deployed in your infrastructure and you are allowed to use it with Allure TestOps
+  enabled: true
+  host: redis.example.com
+  port: 6379
+  database: 0
+  architecture: standalone
+  auth:
+    password: allure
+  master:
+    persistence:
+      enabled: true
+      size: 4Gi
+  sentinel:
+    enabled: false
+    masterSet: big_master
+    nodes: []
+    persistence:
+      enabled: false
+    podLabels:
+      app: redis
+      version: v1
+
+# RabbitMQ Config
+rabbitmq:
+  # If set to 'true', then Helm chart will deploy RabbitMQ and external values will be ignored
+  # Update to 'false' if you have RabbitMQ deployed in your infrastructure and you are allowed to use it with Allure TestOps
+  enabled: true
+  fullnameOverride: rabbitmq
+  auth:
+    # If you have dedicated RabbitMQ server, then take this value from dedicated RabbitMQ settings
+    # Otherwise set to your own random string
+    erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx
+    # Credentials for built-in RabbitMQ
+    username: allure
+    password: allure
+  resources: {}
+  external:
+    # In case of cluster, add hosts separated by comma e.g.: amqps://mq.example.com:5672,amqps://mq1.example.com:5672
+    hosts: amqps://mq.example.com:5672
+    vhost: "/"
+
+postgresql:
+  # If enabled ('true'), then Helm chart will deploy PostgreSQL database as part of the deployment
+  # If set to 'false' the deployment will use dedicated PostgreSQL database server deployed in your infrastructure
+  enabled: false
+  connectionTimeout: 60000
+  auth:
+    username: allure
+    password: allure
+  external:
+    uaaHost: db.example.com
+    uaaPort: 5432
+    reportHost: db.example.com
+    reportPort: 5432
+    sslMode: prefer
+    uaaDbName: uaa
+    uaaUsername: uaa
+    uaaPassword: secret
+    reportDbName: report
+    reportUsername: report
+    reportPassword: secret
+  # This works for built-in postgres only provided with this chart. For external DB you need to execute these manually when creating the databases
+  primary:
+    initdb:
+      scripts:
+        init.sql: |
+          CREATE DATABASE uaa TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+          CREATE DATABASE report TEMPLATE template0 ENCODING 'utf8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+    persistence:
+      size: 20Gi
+  # Init Container Job. It's responsible for assuring connection between TestOps pod and Database
+  # It also works on external databases
+  init:
+    # If you have private registry it should look like reg.domain.tld/postgres:14
+    image: postgres:14
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# File System Block.
+# TestOps works with S3 and CSI storage backends
+# S3 is preferable. The best option is using SaaS S3 AWS or other S3 comparable services. If SaaS is not available, use
+# Minio, built in by default.
+# Local storage is for advanced use. First make sure you have ReadWriteMany CSI Driver Installed and SetUp
+# (https://kubernetes-csi.github.io/docs/drivers.html). (Allows working with NFS, CephFS,...)
+fs:
+  # Supported: S3, CSI
+  type: "S3"
+  s3:
+    # Set true for SaaS or leave false for Minio
+    external: false
+    # the URL should be like https://s3.region.amazonaws.com if your region is not us-east-1
+    endpoint: https://s3.amazonaws.com
+    # Some providers have path style access like s3.provider.com/bucket-name others have domain style
+    # Like bucket-name.s3.provider.com. Choose your provider's
+    pathstyle: false
+    bucket: allure-testops
+    region: us-east-1
+    # If you run Allure Testops in AWS EKS you don't need stating accessKey & secretKey
+    accessKey: foo
+    secretKey: bar
+  csiStorage:
+    storageClass: ""
+    existingVolumeName: ""
+    mountPoint: /data
+    accessMode: ReadWriteMany
+    size: 50Gi
+    annotations: {}
+    finalizers:
+      - kubernetes.io/pvc-protection
+
+
+# Minio is default storage for deploying in K8S. Please consider using SaaS S3 from Cloud providers.
+# if you use External S3 please disable minio
+minio:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 64Gi
+  # Those credentials are applied only if minio is enabled
+  auth:
+    rootUser: WBuetMuTAMAB4M78NG3gQ4dCFJr3SSmU # Replace with your Access Key
+    rootPassword: m9F4qupW4ucKBDQBWr4rwQLSAeC6FE2L # Replace with your Secret Key
+  disableWebUI: true
+  service:
+    ports:
+      api: 9000
+  defaultBuckets: allure-testops
+  defaultRegion: qameta-0
+
+
+certificates:
+  # In case you use self-signed certificates, state all endpoints except for database
+  # example: endpoints: ldaps.example.com:636,rabbit.example.com:5672
+  # Script inside will retrieve certificate for you and store in jks store.
+  endpoints:
+
+# Provide your smtp config to let TestOps send you emails
+
+
+testops:
+  image: allure-testops
+  replicas: 1
+  annotations: {}
+
+  uaaDbConnections: 3
+  reportDbConnections: 10
+
+  service:
+    annotations: {}
+    gatewayPort: 8080
+    uaaPort: 8082
+    reportPort: 8081
+
+  uaaContextPath: "/uaa/"
+  reportContextPath: "/rs/"
+
+  tolerations: []
+
+  nodeSelector: {}
+  affinity: {}
+
+  resources:
+    requests:
+      memory: 2Gi
+    limits:
+      memory: 2Gi
+
+  # Allows unregistered users to register via UI
+  registrationEnabled: false
+
+  # Lets users bypass admin's registration approval if set to true (do not do it in production)
+  autoApprove: false
+
+  # Update your time zone accordingly to the real settings of your server env
+  timeZone: "Europe/London"
+
+  sessionLifespan: 57600
+  logging: warn
+  management:
+    # Endpoints to expose e.g. for Prometheus, HealthChecks etc.
+    expose: health,info,prometheus,configprops
+
+  auth:
+    # Available options system / oidc / saml2 / ldap
+    primary: system
+    # Possible roles: ROLE_ADMIN, ROLE_USER, ROLE_AUDITOR
+    # set to ROLE_AUDITOR for better licence consumption control
+    defaultRole: ROLE_USER
+    # do not configure LDAP without LDAP admin near you
+    ldap:
+      enabled: false
+      auth:
+        user: user
+        pass: pass
+      referral: follow
+      url: ldap://ldap.example.com:389
+      usernamesToLowercase: true
+      passwordAttribute: userPassword
+      user:
+        # dnPatterns must not be used with searchFilter
+        # sAMAccountName is an example, your LDAP parameter could be different
+        # dnPatterns: sAMAccountName={0}
+        searchBase: dc=example,dc=com
+        # in your LDAP instead uid could be a different parameter
+        searchFilter: (&((objectClass=Person))(uid={0}))
+      # Syncs User Role by Group membership on any login
+      syncRoles: false
+      # in your LDAP it could be different
+      uidAttribute: uid
+      group:
+        searchBase: ou=qa,ou=Security Groups,dc=example,dc=com
+        # in your LDAP this search string will be differnt
+        searchFilter: (&(objectClass=Person)(uid={1}))
+        roleAttribute: cn
+      # Maps your LDAP groups on Allure Groups
+      # groups are created by LDAP admin and will have different names
+      userGroupName: allure_users
+      adminGroupName: allure_admins
+    # OIDC is Generic Client Name. Don't worry about it's not Google/Gitlab/Github/Keycloak/etc...
+    oidc:
+      enabled: false
+      # This param is responsible for matching group role attribute
+      roleAttribute: role
+      client:
+        # Your client name, for example Okta
+        name: Google Auth
+        # Your clientId (Get one from OIDC provider)
+        id: foo
+        # Your clientSecret (Get one from OIDC provider)
+        secret: bar
+      # This parameter lets know where your OIDC provider is going to redirect client after successful login
+      redirectURI: https://<your-domain>/login/oauth2/code/allure
+      # URL of your auth provider
+      issuerURI: https://accounts.google.com
+      # This parameter tells allure-testops to use as username. It can be email
+      userNameAttribute: preferred_username
+      scope: openid,email,profile
+      ## Parameters below are NOT compulsory. You need them only if your OIDC provider doesn't support OIDC discovery protocol
+
+      # basic, post, etc...
+      # More info: https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/oauth2/core/ClientAuthenticationMethod.html
+      authMethod:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/authorize)
+      authURI:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/token)
+      tokenURI:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/userinfo)
+      userInfoURI:
+      # example (https://your-subdomain.oktapreview.com/oauth2/v1/keys)
+      jwksURI:
+      # Syncs User Role by Group membership on any login
+      syncRoles: false
+      # Maps your OIDC groups on Allure Groups
+      userGroupName: allure_users
+      adminGroupName: allure_admins
+    saml:
+      enabled: false
+      provider: crowd
+      ACSLocation: https://<your-domain>/api/login/saml2/sso/crowd
+      entityId: https://<testops>/api/login/saml2/service-provider-metadata/crowd
+      identityProviderMetadataUri: https:///path/to/metadata.xml
+      syncRoles: false
+      firstNameAttribute: firstNameAttribute
+      lastNameAttribute: lastNameAttribute
+      emailAttribute: emailAttribute
+      groups:
+        groupRoleAttribute: groupRoleAttribute
+        roleUserGroups: roleUserGroups
+        roleAdminGroups: roleAdminGroups
+  smtp:
+    enabled: false
+    host: smtp.gmail.com
+    port: 465
+    authEnabled: true
+    from: noreply@example.com
+    username: sa-testops-smtp
+    password: SuperSecret
+    # https://en.wikipedia.org/wiki/Opportunistic_TLS
+    startTLSEnabled: true
+    startTLSRequired: true
+    sslEnabled: true
+    sslTrust: smtp.gmail.com
+
+### Always leave it as it is
+## Role Based Access Control
+## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+###
+rbac:
+  enabled: true
+  rules:
+    - apiGroups:
+        - ''
+      resources:
+        - "endpoints"
+        - "services"
+        - "pods"
+        - "configmaps"
+        - "secrets"
+      verbs:
+        - "get"
+        - "watch"
+        - "list"
+
+monitoring:
+  enabled: false
+  victoriaMetrics: false
