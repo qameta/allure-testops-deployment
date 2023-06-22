@@ -210,7 +210,7 @@ spec:
             - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST
               value: {{ .Values.smtp.sslTrust | quote }}
 {{- end }}
-{{- if eq .Values.postgresql.external.sslMode "require" }}
+{{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
             - name: TLS_DB_ENDPOINTS
               value: "{{ .Values.postgresql.external.uaaHost}}:{{ .Values.postgresql.external.uaaPort }}"
 {{- end }}
