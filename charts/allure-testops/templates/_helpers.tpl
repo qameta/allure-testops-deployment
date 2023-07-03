@@ -265,7 +265,7 @@
 {{- define "renderJavaOpts" }}
   {{- $v := . }}
   {{- $memString := include "calculateMemory" $v }}
-  {{- printf "-XX:AdaptiveSizePolicyWeight=50 -XX:+UseTLAB -XX:GCTimeRatio=15 -XX:MinHeapFreeRatio=40 -XX:MinHeapFreeRatio=70 %s" $memString | quote }}
+  {{- printf "-XX:AdaptiveSizePolicyWeight=50 -XX:+UseTLAB -XX:GCTimeRatio=15 -XX:MinHeapFreeRatio=40 -XX:MaxHeapFreeRatio=70 %s" $memString | quote }}
 {{- end }}
 
 {{- define "getImageRegistry" }}
