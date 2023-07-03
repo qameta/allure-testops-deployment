@@ -141,7 +141,7 @@ redis:
     password: allure
   master:
     persistence:
-      enabled: true
+      enabled: false
       size: 32Gi
   sentinel:
     enabled: false
