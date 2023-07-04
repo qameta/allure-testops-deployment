@@ -195,7 +195,7 @@ spec:
               value: "{{ .Values.smtp.port }}"
             - name: SPRING_MAIL_USERNAME
               value: {{ .Values.smtp.username }}
-            - name: SPRING_MAIL_FROM
+            - name: ALLURE_MAIL_FROM
               value: {{ .Values.smtp.from }}
             - name: SPRING_MAIL_PASSWORD
               value: {{ .Values.smtp.password }}
