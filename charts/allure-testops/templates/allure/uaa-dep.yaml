@@ -72,8 +72,13 @@ spec:
 {{- include "renderCrypto" . | indent 10 }}
             - name: JAVA_TOOL_OPTIONS
               value: {{ template "renderJavaOpts" .Values.uaa.resources.limits.memory }}
+{{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://{{ template "uaaDBHost" . }}:{{ template "uaaDBPort" . }}/{{ template "uaaDBName" . }}?sslmode={{ template "postgresSSL" . }}&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory"
+{{- else }}
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://{{ template "uaaDBHost" . }}:{{ template "uaaDBPort" . }}/{{ template "uaaDBName" . }}?sslmode={{ template "postgresSSL" . }}"
+{{- end }}
 {{- if .Values.certificates.endpoints }}
             - name: TLS_ENDPOINTS
               value: "{{ .Values.certificates.endpoints }}"

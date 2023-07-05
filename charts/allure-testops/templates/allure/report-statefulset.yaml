@@ -124,8 +124,13 @@ spec:
               value: {{ template "renderJavaOpts" .Values.report.resources.limits.memory }}
             - name: SPRING_RABBITMQ_ADDRESSES
               value: {{ template "rabbitHost" . }}
+{{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://{{ template "reportDBHost" . }}:{{ template "reportDBPort" . }}/{{ template "reportDBName" . }}?sslmode={{ template "postgresSSL" . }}&sslfactory=org.postgresql.ssl.DefaultJavaSSLFactory"
+{{- else }}
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://{{ template "reportDBHost" . }}:{{ template "reportDBPort" . }}/{{ template "reportDBName" . }}?sslmode={{ template "postgresSSL" . }}"
+{{- end }}
 {{- if eq .Values.fs.type "S3" }}
             - name: {{ .Values.build }}_BLOBSTORAGE_TYPE
               value: S3
