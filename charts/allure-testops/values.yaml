@@ -302,7 +302,7 @@ allure:
   uaaContextPath: "/uaa/"
   reportContextPath: "/rs/"
   auth:
-    # Available options system / oidc / saml2 / ldap
+    # Available options system / openid / saml2 / ldap
     primary: system
     # Possible roles: ROLE_ADMIN, ROLE_USER, ROLE_AUDITOR
     # set to ROLE_AUDITOR for better licence consumption control
