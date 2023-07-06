@@ -302,11 +302,11 @@ allure:
   uaaContextPath: "/uaa/"
   reportContextPath: "/rs/"
   auth:
-    # Available options system / oidc / saml2 / ldap
+    # Available options system / openid / saml2 / ldap
     primary: system
     # Possible roles: ROLE_ADMIN, ROLE_USER, ROLE_AUDITOR
     # set to ROLE_AUDITOR for better licence consumption control
-    defaultRole: ROLE_USER
+    defaultRole: ROLE_AUDITOR
     # do not configure LDAP without LDAP admin near you
     ldap:
       enabled: false
@@ -369,7 +369,7 @@ allure:
       userInfoURI:
       # example (https://your-subdomain.oktapreview.com/oauth2/v1/keys)
       jwksURI:
-      # Syncs User Role by Group membership on any login
+      # Syncs User Role by Group membership on login
       syncRoles: false
       # Maps your OIDC groups on Allure Groups
       userGroupName: allure_users
