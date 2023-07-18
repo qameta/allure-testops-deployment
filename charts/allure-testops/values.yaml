@@ -276,6 +276,7 @@ smtp:
   port: 465
   authEnabled: true
   from: noreply@example.com
+  # Username and password may be set via ExternalSecret as well
   username: sa-testops-smtp
   password: SuperSecret
   # https://en.wikipedia.org/wiki/Opportunistic_TLS
