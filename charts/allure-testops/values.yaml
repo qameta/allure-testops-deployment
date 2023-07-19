@@ -476,6 +476,7 @@ report:
   maxDBConn: 10
   maxConcurrency: 5
   maxS3Concurrency: 200
+  taskExecutorCorePoolSize: 200
   uploads:
     parseConsumers: 10
     storeConsumers: 2
