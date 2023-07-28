@@ -181,6 +181,37 @@ spec:
               value: {{ .Values.report.uploads.storeConsumers | quote }}
             - name: ALLURE_TASKEXECUTOR_COREPOOLSIZE
               value: {{ .Values.report.taskExecutorCorePoolSize | quote }}
+{{- if .Values.report.cache }}
+            - name: SPRING_REDIS_HOST
+              value: "{{ template "allure-testops.redis.fullname" . }}"
+            - name: SPRING_REDIS_PORT
+              value: "{{ .Values.redis.port }}"
+            - name: SPRING_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: "redisPass"
+            - name: ALLURE_CACHE-TTL_ENABLED
+              value: "true"
+            - name: ALLURE_CACHE-TTL_BY-DEFAULT
+              value: 1m
+            - name: ALLURE_CACHE-TTL_WIDGETS_AUTOMATION-TREND
+              value: 1h
+            - name: ALLURE_CACHE-TTL_WIDGETS_PROJECT-METRIC-TREND
+              value: 1h
+            - name: ALLURE_CACHE-TTL_WIDGETS_LAUNCH-DURATION-HISTOGRAM
+              value: 1h
+            - name: ALLURE_CACHE-TTL_WIDGETS_LAUNCH-DURATION-HISTOGRAM
+              value: 1h
+            - name: ALLURE_CACHE-TTL_WIDGETS_ANALYTIC-PIE-CHART
+              value: 1h
+            - name: ALLURE_CACHE-TTL_WIDGETS_TR-COMPLEX-TREND
+              value: 1h
+            - name: ALLURE_CACHE-TTL_WIDGETS_TR-STATISTIC-TREND
+              value: 1h
+            - name: ALLURE_CACHE-TTL_WIDGETS_TC-LAST-RESULT
+              value: 1h
+{{- end}}
 {{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
             - name: TLS_DB_ENDPOINTS
               value: "{{ .Values.postgresql.external.reportHost}}:{{ .Values.postgresql.external.reportPort }}"

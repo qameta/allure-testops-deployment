@@ -473,6 +473,7 @@ uaa:
 
 report:
   replicaCount: 1
+  cache: false
   image: allure-report
   maxDBConn: 10
   maxConcurrency: 5
