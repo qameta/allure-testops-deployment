@@ -181,7 +181,7 @@ spec:
               value: {{ .Values.report.uploads.storeConsumers | quote }}
             - name: ALLURE_TASKEXECUTOR_COREPOOLSIZE
               value: {{ .Values.report.taskExecutorCorePoolSize | quote }}
-{{- if .Values.report.cache }}
+{{- if .Values.report.cache.enabled }}
             - name: SPRING_REDIS_HOST
               value: "{{ template "allure-testops.redis.fullname" . }}"
             - name: SPRING_REDIS_PORT
@@ -192,25 +192,23 @@ spec:
                   name: {{ $secret_name }}
                   key: "redisPass"
             - name: ALLURE_CACHE-TTL_ENABLED
-              value: "true"
+              value: {{ .Values.report.cache.enabled | quote }}
             - name: ALLURE_CACHE-TTL_BY-DEFAULT
-              value: 1m
+              value: {{ .Values.report.cache.ttlByDefault }}
             - name: ALLURE_CACHE-TTL_WIDGETS_AUTOMATION-TREND
-              value: 1h
+              value: {{ .Values.report.cache.ttlWidgetsAutomationTrend }}
             - name: ALLURE_CACHE-TTL_WIDGETS_PROJECT-METRIC-TREND
-              value: 1h
+              value: {{ .Values.report.cache.ttlWidgetsProjectMetricTrend }}
             - name: ALLURE_CACHE-TTL_WIDGETS_LAUNCH-DURATION-HISTOGRAM
-              value: 1h
-            - name: ALLURE_CACHE-TTL_WIDGETS_LAUNCH-DURATION-HISTOGRAM
-              value: 1h
+              value: {{ .Values.report.cache.ttlWidgetsLaunchDurationHistogram }}
             - name: ALLURE_CACHE-TTL_WIDGETS_ANALYTIC-PIE-CHART
-              value: 1h
+              value: {{ .Values.report.cache.ttlWidgetsAnalyticPieChart }}
             - name: ALLURE_CACHE-TTL_WIDGETS_TR-COMPLEX-TREND
-              value: 1h
+              value: {{ .Values.report.cache.ttlWidgetsTrComplexTrend }}
             - name: ALLURE_CACHE-TTL_WIDGETS_TR-STATISTIC-TREND
-              value: 1h
+              value: {{ .Values.report.cache.ttlWidgetsTrStatisticTrend }}
             - name: ALLURE_CACHE-TTL_WIDGETS_TC-LAST-RESULT
-              value: 1h
+              value: {{ .Values.report.cache.ttlWidgetsTcLastResult }}
 {{- end}}
 {{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
             - name: TLS_DB_ENDPOINTS

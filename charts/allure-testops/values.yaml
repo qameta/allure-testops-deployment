@@ -473,7 +473,16 @@ uaa:
 
 report:
   replicaCount: 1
-  cache: false
+  cache:
+    enabled: false
+    ttlByDefault: 1m
+    ttlWidgetsAutomationTrend: 1h
+    ttlWidgetsProjectMetricTrend: 1h
+    ttlWidgetsLaunchDurationHistogram: 1h
+    ttlWidgetsAnalyticPieChart: 1h
+    ttlWidgetsTrComplexTrend: 1h
+    ttlWidgetsTrStatisticTrend: 1h
+    ttlWidgetsTcLastResult: 1h
   image: allure-report
   maxDBConn: 10
   maxConcurrency: 5
