@@ -316,7 +316,7 @@ allure:
         pass: pass
       referral: follow
       url: ldap://ldap.example.com:389
-      usernamesToLowercase: true
+      usernamesToLowercase: false
       passwordAttribute: userPassword
       user:
         # dnPatterns must not be used with searchFilter
