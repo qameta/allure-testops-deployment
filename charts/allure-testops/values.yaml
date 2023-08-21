@@ -15,6 +15,7 @@ password: admin
 ## These parameters needs to be updated and saved.
 ## These parameters is used to encrypt sensitive information in the database.
 ## If parameters is lost or updated, your integrations will stop working
+## Update this by generating a secret e.g. like `openssl rand -base64 16` and put the output here
 cryptoPass: <ChangeMePleaseDuringFirstDeployment>
 jwtSecret: <ChangeMeEither>
 
@@ -268,6 +269,11 @@ certificates:
   # example: endpoints: ldaps.example.com:636,rabbit.example.com:5672
   # Script inside will retrieve certificate for you and store in jks store.
   endpoints:
+  # List of endpoints with self-signed certificates
+  staticCerts: []
+  # example
+  # staticCerts:
+  #  - https://example.url/ca.pem
 
 # Provide your smtp config to let TestOps send you emails
 smtp:
