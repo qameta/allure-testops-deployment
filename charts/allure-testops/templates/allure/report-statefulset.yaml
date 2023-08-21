@@ -218,6 +218,13 @@ spec:
             - name: TLS_ENDPOINTS
               value: "{{ .Values.certificates.endpoints }}"
 {{- end }}
+
+{{- if .Values.certificates.staticCerts }}
+            - name: STATIC_CERTS
+              value: "{{ join "," .Values.certificates.staticCerts }}"
+{{- end }}
+
+
 {{- range $name, $value := .Values.report.env.open }}
             - name: {{ $name | quote }}
               value: {{ $value | quote }}
