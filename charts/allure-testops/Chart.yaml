@@ -1,7 +1,7 @@
 apiVersion: v2
 name: allure-testops
-version: 2023.8.21
-appVersion: 4.20.2
+version: 2023.8.28
+appVersion: 4.20.3
 
 description: Allure TestOps
 
