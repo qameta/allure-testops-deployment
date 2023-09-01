@@ -10,3 +10,4 @@ configs
 *-internal-*.yaml
 *-local.yaml
 *-yandex.yaml
+test-values.yaml

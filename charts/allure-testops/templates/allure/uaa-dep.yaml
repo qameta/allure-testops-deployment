@@ -242,7 +242,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ $secret_name }}
-                  key: "licenceApiToken"
+                  key: "licenseKey"
 {{- end }}
 {{- if .Values.certificates.staticCerts }}
             - name: STATIC_CERTS
@@ -268,4 +268,17 @@ spec:
 {{- with .Values.uaa.resources }}
           resources:
 {{ toYaml . | indent 12 }}
+{{- end }}
+{{- if .Values.vault.enabled }}
+          volumeMounts:
+            - name: vault-creds
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: vault-creds
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ template "allure-testops.fullname" . }}
 {{- end }}

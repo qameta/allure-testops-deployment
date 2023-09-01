@@ -1,0 +1,105 @@
+{{- if .Values.vault.enabled }}
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: {{ template "allure-testops.fullname" . }}
+spec:
+  provider: vault
+  secretObjects:
+    - secretName: {{ .Values.vault.secretName }}
+      type: Opaque
+      data:
+        - objectName: "cryptoPass"
+          key: "cryptoPass"
+        - objectName: "jwtSecret"
+          key: "jwtSecret"
+        - objectName: "username"
+          key: "username"
+        - objectName: "password"
+          key: "password"
+        - objectName: "licenseKey"
+          key: "licenseKey"
+        - objectName: "subId"
+          key: "subId"
+        - objectName: "reportDbUser"
+          key: "reportDbUser"
+        - objectName: "uaaDbUser"
+          key: "uaaDbUser"
+        - objectName: "reportDbPass"
+          key: "reportDbPass"
+        - objectName: "uaaDbPass"
+          key: "uaaDbPass"
+        - objectName: "redisPass"
+          key: "redisPass"
+        - objectName: "rabbitUser"
+          key: "rabbitUser"
+        - objectName: "rabbitPass"
+          key: "rabbitPass"
+        - objectName: "s3AccessKey"
+          key: "s3AccessKey"
+        - objectName: "s3SecretKey"
+          key: "s3SecretKey"
+  parameters:
+    roleName: "{{ .Values.vault.roleName }}"
+    objects: |
+      - objectName: "cryptoPass"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "crypto_pass"
+
+      - objectName: "jwtSecret"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "jwt_secret"
+
+      - objectName: "username"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "username"
+
+      - objectName: "password"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "password"
+
+      - objectName: "licenseKey"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "licence"
+
+      - objectName: "subId"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "subscription_id"
+
+      - objectName: "reportDbUser"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "db_report_user"
+
+      - objectName: "uaaDbUser"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "db_uaa_user"
+
+      - objectName: "reportDbPass"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "db_report_pass"
+
+      - objectName: "uaaDbPass"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "db_uaa_pass"
+
+      - objectName: "redisPass"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "redis_pass"
+
+      - objectName: "rabbitUser"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "rabbit_user"
+
+      - objectName: "rabbitPass"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "rabbit_pass"
+
+      - objectName: "s3AccessKey"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "s3_access_key"
+
+      - objectName: "s3SecretKey"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "s3_secret_key"
+{{- end }}

@@ -166,3 +166,16 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
+{{- if .Values.vault.enabled }}
+          volumeMounts:
+            - name: vault-creds
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: vault-creds
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ template "allure-testops.fullname" . }}
+{{- end }}

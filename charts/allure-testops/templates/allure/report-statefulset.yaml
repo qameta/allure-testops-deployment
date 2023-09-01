@@ -56,55 +56,6 @@ spec:
              do echo waiting for database; sleep 2; done;' ]
 {{- $secret_name := include "allure-testops.secret.name" . }}
       containers:
-{{- if .Values.capacitor.enabled }}
-        - name: {{ template "allure-testops.report.fullname" . }}-capacitor
-          image: "{{ .Values.registry.repo }}/{{ .Values.registry.name }}/{{ .Values.capacitor.image }}:{{ .Values.capacitor.version | default "latest" }}"
-          imagePullPolicy: {{ .Values.registry.pullPolicy }}
-{{- if .Values.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
-{{- end }}
-          env:
-            - name: APP_PORT
-              value: ":{{ .Values.capacitor.port }}"
-            - name: CACHE_TTL
-              value: "{{ .Values.capacitor.cacheTTL }}"
-{{- if .Values.redis.enabled }}
-            - name: REDIS_HOSTS
-              value: "{{ template "allure-testops.redis.fullname" . }}:{{ .Values.redis.port }}"
-{{- else }}
-            - name: REDIS_HOSTS
-              value: "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
-{{- end }}
-            - name: ENC_IV
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: "encIV"
-            - name: ENC_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: "encKey"
-            - name: S3_ENDPOINT
-              value: "{{ .Values.fs.s3.endpoint }}"
-            - name: S3_REGION
-              value: "{{ .Values.fs.s3.region }}"
-            - name: ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: "s3AccessKey"
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: "s3SecretKey"
-            - name: REDIS_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: "redisPass"
-{{- end }}
         - name: {{ template "allure-testops.report.fullname" . }}
           image: "{{ template "getImageRegistry" . }}{{ .Values.report.image }}:{{ .Values.version | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.registry.pullPolicy }}
@@ -246,13 +197,29 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
-{{- if eq .Values.fs.type "CSI" }}
+{{- if or (eq .Values.fs.type "CSI") (.Values.vault.enabled) }}
           volumeMounts:
+{{- if eq .Values.fs.type "CSI" }}
             - mountPath: {{ .Values.fs.csiStorage.mountPoint }}
               name: storage
+{{- end }}
+{{- if .Values.vault.enabled }}
+            - name: vault-creds
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+{{- end }}
       volumes:
+{{- if eq .Values.fs.type "CSI" }}
         - name: storage
           persistentVolumeClaim:
             claimName: {{ template "allure-testops.report.fullname" . }}
 {{- end }}
-
+{{- if .Values.vault.enabled }}
+        - name: vault-creds
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ template "allure-testops.fullname" . }}
+{{- end }}
+{{- end }}

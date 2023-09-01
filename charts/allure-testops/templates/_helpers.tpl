@@ -58,7 +58,7 @@
 {{- end -}}
 
 {{- define "allure-testops.secret.name" -}}
-{{- if not .Values.externalSecrets.enabled }}
+{{- if and (not .Values.externalSecrets.enabled) (not .Values.vault.enabled) }}
   {{- $secret_name := include "allure-testops.fullname" . }}
   {{- printf $secret_name }}
 {{- else }}
@@ -66,11 +66,16 @@
     {{- $secret_name := .Values.externalSecrets.name }}
     {{- printf $secret_name }}
   {{- else }}
-    {{- $secret_name := include "allure-testops.fullname" . }}
-    {{- printf $secret_name }}
+    {{- if .Values.vault.enabled }}
+      {{- $secret_name := .Values.vault.secretName }}
+      {{- printf $secret_name }}
+    {{ else }}
+      {{- $secret_name := include "allure-testops.fullname" . }}
+      {{- printf $secret_name }}
   {{- end }}
 {{- end }}
 {{- end -}}
+{{- end }}
 
 {{- define "rabbitHost" }}
 {{- if .Values.rabbitmq.enabled }}

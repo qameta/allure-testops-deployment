@@ -291,6 +291,14 @@ smtp:
   sslEnabled: true
   sslTrust: smtp.gmail.com
 
+# Requires Vault CSI https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-secret-store-driver#secretkey
+vault:
+  enabled: false
+  secretName: vault-secret
+  vaultAddress: "http://vault.vault.svc.cluster.local:8200"
+  roleName: testops
+  secretPath: secret/data/testops-credentials
+
 allure:
   # No Settings from this helm chart will be applied except ENV. (For internal use)
   manualConfig: false
@@ -534,21 +542,6 @@ report:
         successThreshold: 1
         failureThreshold: 130
         initialDelaySeconds: 60
-
-# Capacitor is an experimental sidecar service for TestOps allowing to spread s3 bottleneck.
-# not yet available
-capacitor:
-  enabled: false
-  image: capacitor
-  version: 0.0.1
-  port: 3000
-  # This parameter defines how long files are going to live in cache. Possible extensions s/m/h/d
-  # But make sure your Redis has enough space
-  cacheTTL: "12h"
-  # Part of secret to encrypt data in redis. Should be 8 chars long
-  encIV: "jjJkwzDk"
-  # Part of secret to encrypt data in redis. Should be 24 chars long
-  encKey: "BpLnfgDsc3WD9F3qNfHK6a95"
 
 # Before enabling monitoring make sure you have Prometheus & Prometheus Operator Installed
 monitoring:
