@@ -97,10 +97,13 @@
 {{- if .Values.postgresql.enabled }}
   {{- printf "%.f" .Values.postgresql.primary.service.ports.postgresql }}
 {{- else }}
-  {{- printf "%.f" .Values.postgresql.external.uaaPort }}
+  {{ if kindIs "string" .Values.postgresql.external.uaaPort }}
+    {{- print .Values.postgresql.external.uaaPort }}
+  {{- else }}
+    {{- printf "%.f" .Values.postgresql.external.uaaPort }}
 {{- end }}
 {{- end }}
-
+{{- end }}
 {{- define "uaaDBName" }}
 {{- if .Values.postgresql.enabled }}
   {{- print "uaa" }}
@@ -121,7 +124,11 @@
 {{- if .Values.postgresql.enabled }}
   {{- printf "%.f" .Values.postgresql.primary.service.ports.postgresql }}
 {{- else }}
-  {{- printf "%.f" .Values.postgresql.external.reportPort }}
+  {{ if kindIs "string" .Values.postgresql.external.reportPort }}
+    {{- print .Values.postgresql.external.reportPort}}
+  {{- else }}
+    {{- printf "%.f" .Values.postgresql.external.reportPort }}
+  {{- end}}
 {{- end }}
 {{- end }}
 
