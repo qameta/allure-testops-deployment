@@ -225,7 +225,7 @@ spec:
             - name: TLS_DB_ENDPOINTS
               value: "{{ .Values.postgresql.external.uaaHost}}:{{ .Values.postgresql.external.uaaPort }}"
 {{- end }}
-{{- if .Values.licenseKey }}
+{{- if or (.Values.licenseKey) (.Values.licence.enabled) }}
             - name: {{ .Values.build }}_LICENSE_BODY
               valueFrom:
                 secretKeyRef:
