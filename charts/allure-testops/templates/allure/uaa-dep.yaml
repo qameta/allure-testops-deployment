@@ -232,7 +232,7 @@ spec:
                   name: {{ $secret_name }}
                   key: "licenseKey"
 {{- end }}
-{{- if .Values.subscriptionId }}
+{{- if or (.Values.subscriptionId) (.Values.subscription.enabled) }}
             - name: {{ .Values.build }}_LICENSE_SUBSCRIPTIONID
               valueFrom:
                 secretKeyRef:

@@ -20,8 +20,10 @@ spec:
           key: "password"
         - objectName: "licenseKey"
           key: "licenseKey"
+{{ if .Values.subscription.enabled}}
         - objectName: "subId"
           key: "subId"
+{{- end }}
         - objectName: "reportDbUser"
           key: "reportDbUser"
         - objectName: "uaaDbUser"
@@ -62,11 +64,11 @@ spec:
       - objectName: "licenseKey"
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "licence"
-
+{{ if .Values.subscription.enabled}}
       - objectName: "subId"
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "subscription_id"
-
+{{- end }}
       - objectName: "reportDbUser"
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "db_report_user"
