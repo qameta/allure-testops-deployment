@@ -19,6 +19,9 @@ password: admin
 cryptoPass: <ChangeMePleaseDuringFirstDeployment>
 jwtSecret: <ChangeMeEither>
 
+subscription:
+  enabled: false
+
 ## Security Context
 ## 65534 started by a user with lowest privilegies
 ## Openshift requires different range e.g. >= 1000620000
