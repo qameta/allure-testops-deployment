@@ -19,6 +19,9 @@ password: admin
 cryptoPass: <ChangeMePleaseDuringFirstDeployment>
 jwtSecret: <ChangeMeEither>
 
+licence:
+  enabled: false
+
 subscription:
   enabled: false
 
