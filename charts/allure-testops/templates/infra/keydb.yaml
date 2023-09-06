@@ -39,7 +39,7 @@ spec:
             - "/etc/keydb/redis.conf"
             - "--bind 0.0.0.0"
             - "--port {{ .Values.redis.port }}"
-            - "--server-threads 2"
+            - "--server-threads {{ .Values.redis.threads }}"
             - "--masterauth {{ .Values.redis.auth.password }}"
             - "--requirepass {{ .Values.redis.auth.password }}"
           ports:
