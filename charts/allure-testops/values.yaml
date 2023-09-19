@@ -429,10 +429,6 @@ gateway:
   resources:
     requests:
       memory: 512Mi
-      cpu: 1
-    limits:
-      memory: 512Mi
-      cpu: 1
   probes:
     enabled: true
     liveness:
@@ -469,11 +465,7 @@ uaa:
   # Minimum TestOps UAA Memory is 512Mi
   resources:
     requests:
-      memory: 1Gi
-      cpu: 1
-    limits:
-      memory: 1Gi
-      cpu: 1
+      memory: 512Mi
   probes:
     # Disable them during updates involving DB migrations
     enabled: true
@@ -527,11 +519,7 @@ report:
   # Minimum TestOps Report Memory is 512Mi
   resources:
     requests:
-      memory: 3Gi
-      cpu: 1
-    limits:
-      memory: 4Gi
-      cpu: 4
+      memory: 1Gi
   probes:
     # Disable them during updates involving DB migrations
     enabled: true
