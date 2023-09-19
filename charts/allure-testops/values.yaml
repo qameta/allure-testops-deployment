@@ -304,6 +304,7 @@ vault:
   vaultAddress: "http://vault.vault.svc.cluster.local:8200"
   roleName: testops
   secretPath: secret/data/testops-credentials
+  smtpPath: secret/data/smtp-credentials
 
 allure:
   # No Settings from this helm chart will be applied except ENV. (For internal use)

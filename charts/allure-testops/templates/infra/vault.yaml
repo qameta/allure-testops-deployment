@@ -42,6 +42,10 @@ spec:
           key: "s3AccessKey"
         - objectName: "s3SecretKey"
           key: "s3SecretKey"
+        - objectName: "smtpUsername"
+          key: "smtpUsername"
+        - objectName: "smtpPassword"
+          key: "smtpPassword"
   parameters:
     roleName: "{{ .Values.vault.roleName }}"
     objects: |
@@ -104,4 +108,12 @@ spec:
       - objectName: "s3SecretKey"
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "s3_secret_key"
+
+      - objectName: "smtpUsername"
+        secretPath: "{{ .Values.vault.smtpPath }}"
+        secretKey: "username"
+
+      - objectName: "smtpPassword"
+        secretPath: "{{ .Values.vault.smtpPath }}"
+        secretKey: "password"
 {{- end }}
