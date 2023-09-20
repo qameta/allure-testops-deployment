@@ -72,7 +72,7 @@ spec:
 {{- include "renderCommonEnvs" . | indent 10 }}
 {{- include "renderCrypto" . | indent 10 }}
             - name: JAVA_TOOL_OPTIONS
-              value: {{ template "renderJavaOpts" .Values.report.resources.limits.memory }}
+              value: {{ template "renderJavaOpts" .Values.report.resources.requests.memory }}
             - name: SPRING_RABBITMQ_ADDRESSES
               value: {{ template "rabbitHost" . }}
 {{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
