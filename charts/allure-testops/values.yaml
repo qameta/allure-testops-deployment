@@ -143,10 +143,15 @@ redis:
   host: redis.example.com
   port: 6379
   database: 0
+  commonLabels:
+    app: redis
+    version: v1
   architecture: standalone
   auth:
     password: allure
   master:
+    service:
+
     persistence:
       enabled: false
       size: 32Gi
