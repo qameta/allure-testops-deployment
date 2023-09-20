@@ -541,6 +541,9 @@ report:
 # Before enabling monitoring make sure you have Prometheus & Prometheus Operator Installed
 monitoring:
   enabled: false
+  # prometheus for Prometheus Operator ServiceMonitor, victoria for VictoriaMetrics Operator ServiceScrape
+  kind: prometheus
+  interval: 15s
 
 ### Always leave it as it is
 ## Role Based Access Control
