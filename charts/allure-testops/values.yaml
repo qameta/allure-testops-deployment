@@ -203,6 +203,9 @@ postgresql:
     reportDbName: report
     reportUsername: report
     reportPassword: secret
+    pgbouncer:
+      enabled: false
+      image: docker.io/edoburu/pgbouncer:1.20.1-p0
   # This works for built-in postgres only provided with this chart. For external DB you need to execute these manually when creating the databases
   primary:
     initdb:

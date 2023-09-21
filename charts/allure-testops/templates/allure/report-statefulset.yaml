@@ -51,9 +51,15 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
+  {{- if .Values.postgresql.external.pgbouncer.enabled }}
+          command: [ 'sh', '-c',
+            'until pg_isready -h {{ .Values.postgresql.external.reportHost }} -p {{ .Values.postgresql.external.reportPort }};
+             do echo waiting for database; sleep 2; done;' ]
+  {{- else }}
           command: [ 'sh', '-c',
             'until pg_isready -h {{ template "reportDBHost" . }} -p {{ template "reportDBPort" . }};
              do echo waiting for database; sleep 2; done;' ]
+  {{- end }}
 {{- $secret_name := include "allure-testops.secret.name" . }}
       containers:
         - name: {{ template "allure-testops.report.fullname" . }}
@@ -207,6 +213,43 @@ spec:
             - name: vault-creds
               mountPath: "/mnt/secrets-store"
               readOnly: true
+{{- end }}
+{{- if .Values.postgresql.external.pgbouncer.enabled }}
+        - name: pgbouncer
+          image: {{ .Values.postgresql.external.pgbouncer.image | quote }}
+          imagePullPolicy: {{ .Values.registry.pullPolicy }}
+          volumeMounts:
+            - name: vault-creds
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - killall -INT pgbouncer && sleep 120
+          env:
+            - name: DB_HOST
+              value: {{ .Values.postgresql.external.reportHost }}
+            - name: DB_PORT
+              value: {{ .Values.postgresql.external.reportPort | quote }}
+            - name: DB_NAME
+              value: {{ .Values.postgresql.external.reportDbName }}
+            - name: POOL_MODE
+              value: transaction
+            - name: SERVER_RESET_QUERY
+              value: DISCARD ALL
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: reportDbUser
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret_name }}
+                  key: reportDbPass
 {{- end }}
       volumes:
 {{- if eq .Values.fs.type "CSI" }}
