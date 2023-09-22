@@ -237,7 +237,7 @@ spec:
             - name: DB_NAME
               value: {{ .Values.postgresql.external.reportDbName }}
             - name: POOL_MODE
-              value: transaction
+              value: {{ .Values.postgresql.external.pgbouncer.operationMode }}
             - name: SERVER_RESET_QUERY
               value: DISCARD ALL
             - name: DB_USER
