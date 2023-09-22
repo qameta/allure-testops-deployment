@@ -303,7 +303,7 @@ spec:
             - name: DB_NAME
               value: {{ .Values.postgresql.external.uaaDbName }}
             - name: POOL_MODE
-              value: statement
+              value: session
             - name: SERVER_RESET_QUERY
               value: DISCARD ALL
             - name: DB_USER
