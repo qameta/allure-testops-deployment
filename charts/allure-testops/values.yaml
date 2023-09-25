@@ -335,8 +335,8 @@ allure:
   auth:
     # Available options system / openid / saml2 / ldap
     primary: system
-    # Possible roles: ROLE_ADMIN, ROLE_USER, ROLE_AUDITOR
-    # set to ROLE_AUDITOR for better licence consumption control
+    # Allowed roles: ROLE_ADMIN, ROLE_USER, ROLE_GUEST
+    # set to ROLE_GUEST (from ver. 4.21.0) for better licence consumption control
     defaultRole: ROLE_USER
     # do not configure LDAP without LDAP admin near you
     ldap:
