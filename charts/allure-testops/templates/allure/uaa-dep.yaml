@@ -29,7 +29,7 @@ spec:
 {{- end }}
     spec:
 {{- if .Values.rbac.enabled }}
-      serviceAccountName:  {{ template "allure-testops.name" . }}-sa
+      serviceAccountName: sa-{{ template "allure-testops.fullname" . }}
 {{- end }}
       imagePullSecrets:
         - name: {{ .Values.registry.imagePullSecret }}
