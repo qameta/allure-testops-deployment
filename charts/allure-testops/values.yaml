@@ -1,7 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
-version: 4.21.0
+version: 4.22.0
 
 releaseName: allure-testops
 
@@ -18,12 +18,6 @@ password: admin
 ## Update this by generating a secret e.g. like `openssl rand -base64 16` and put the output here
 cryptoPass: <ChangeMePleaseDuringFirstDeployment>
 jwtSecret: <ChangeMeEither>
-
-licence:
-  enabled: false
-
-subscription:
-  enabled: false
 
 ## Security Context
 ## 65534 started by a user with lowest privilegies
@@ -573,3 +567,11 @@ rbac:
         - get
         - watch
         - list
+
+## Internal service parameters
+## please leave these as they are defined in this file
+licence:
+  enabled: false
+
+subscription:
+  enabled: false
