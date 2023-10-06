@@ -30,7 +30,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 30
 {{- if .Values.rbac.enabled }}
-      serviceAccountName: sa-{{ template "allure-testops.fullname" . }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName }}
 {{- end }}
       imagePullSecrets:
         - name: {{ .Values.registry.imagePullSecret }}
@@ -180,8 +180,6 @@ spec:
             - name: STATIC_CERTS
               value: "{{ join "," .Values.certificates.staticCerts }}"
 {{- end }}
-
-
 {{- range $name, $value := .Values.report.env.open }}
             - name: {{ $name | quote }}
               value: {{ $value | quote }}
