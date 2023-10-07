@@ -560,6 +560,7 @@ monitoring:
 ###
 rbac:
   enabled: true
+  serviceAccountName: allure-testops-sa
   rules:
     - apiGroups:
         - ''
