@@ -30,7 +30,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 30
 {{- if .Values.rbac.enabled }}
-      serviceAccountName: {{ .Values.rbac.serviceAccount.name }}
+      serviceAccountName: {{ .Values.rbac.serviceAccountName }}
 {{- end }}
       imagePullSecrets:
         - name: {{ .Values.registry.imagePullSecret }}

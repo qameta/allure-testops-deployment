@@ -135,7 +135,7 @@ network:
 # Redis Config
 redis:
   # Set to 'false' if you have Redis deployed in your infrastructure and you are allowed to use it with Allure TestOps
-  enabled: true
+  enabled: false
   keyDB: false
   # KeyDb Threads
   threads: 2
@@ -563,10 +563,9 @@ monitoring:
 
 rbac:
   enabled: true
-  serviceAccount: 
-    name: allure-testops-sa
-    # Create a new service account or use existing. Defaults to true if not provided.
-    create: true
+  serviceAccountName: allure-testops-sa
+  # Create a new service account or use existing. Defaults to true if not provided.
+  createServiceAccount: true
   rules:
     - apiGroups:
         - ''
