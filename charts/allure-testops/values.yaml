@@ -135,7 +135,7 @@ network:
 # Redis Config
 redis:
   # Set to 'false' if you have Redis deployed in your infrastructure and you are allowed to use it with Allure TestOps
-  enabled: true
+  enabled: false
   keyDB: false
   # KeyDb Threads
   threads: 2
@@ -314,6 +314,8 @@ vault:
   roleName: testops
   secretPath: secret/data/testops-credentials
   smtpPath: secret/data/smtp-credentials
+  kubernetesMountPath:
+  skipTLSVerify: false
 
 allure:
   # No Settings from this helm chart will be applied except ENV. (For internal use)
@@ -558,9 +560,13 @@ monitoring:
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 ###
+
 rbac:
   enabled: true
-  serviceAccountName: allure-testops-sa
+  serviceAccount: 
+    name: allure-testops-sa
+    # Create a new service account or use existing
+    create: false
   rules:
     - apiGroups:
         - ''

@@ -48,6 +48,12 @@ spec:
           key: "smtpPassword"
   parameters:
     roleName: "{{ .Values.vault.roleName }}"
+    vaultAddress: "{{ .Values.vault.vaultAddress }}"
+    vaultKubernetesMountPath: "{{ .Values.vault.vaultAddress }}"
+{{- if .Values.vault.kubernetesMountPath }}
+        vaultKubernetesMountPath: {{ .Values.vault.kubernetesMountPath }}
+{{- end }}
+    vaultSkipTLSVerify: {{ .Values.vault.skipTLSVerify | default false }}
     objects: |
       - objectName: "cryptoPass"
         secretPath: "{{ .Values.vault.secretPath }}"
@@ -108,7 +114,7 @@ spec:
       - objectName: "s3SecretKey"
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "s3_secret_key"
-
+{{ if .Values.smtp.enabled }}
       - objectName: "smtpUsername"
         secretPath: "{{ .Values.vault.smtpPath }}"
         secretKey: "username"
@@ -116,4 +122,5 @@ spec:
       - objectName: "smtpPassword"
         secretPath: "{{ .Values.vault.smtpPath }}"
         secretKey: "password"
+{{- end }}
 {{- end }}

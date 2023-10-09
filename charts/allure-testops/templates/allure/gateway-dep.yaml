@@ -30,7 +30,7 @@ spec:
 {{- end }}
     spec:
 {{- if .Values.rbac.enabled }}
-      serviceAccountName: {{ .Values.rbac.serviceAccountName }}
+      serviceAccountName: {{ .Values.rbac.serviceAccount.name }}
 {{- end }}
       imagePullSecrets:
         - name: {{ .Values.registry.imagePullSecret }}
