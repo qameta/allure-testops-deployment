@@ -135,7 +135,7 @@ network:
 # Redis Config
 redis:
   # Set to 'false' if you have Redis deployed in your infrastructure and you are allowed to use it with Allure TestOps
-  enabled: false
+  enabled: true
   keyDB: false
   # KeyDb Threads
   threads: 2
