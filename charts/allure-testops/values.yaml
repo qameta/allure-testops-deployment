@@ -565,8 +565,8 @@ rbac:
   enabled: true
   serviceAccount: 
     name: allure-testops-sa
-    # Create a new service account or use existing
-    create: false
+    # Create a new service account or use existing. Defaults to true if not provided.
+    create: true
   rules:
     - apiGroups:
         - ''
