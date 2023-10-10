@@ -151,7 +151,7 @@ redis:
     password: allure
   master:
     service:
-
+      annotations: {}
     persistence:
       enabled: false
       size: 32Gi
@@ -310,10 +310,14 @@ smtp:
 vault:
   enabled: false
   secretName: vault-secret
-  vaultAddress: "http://vault.vault.svc.cluster.local:8200"
+  url: "http://vault.vault.svc.cluster.local:8200"
+  skipTLSVerify: false
+  # Path where the k8s authentication backend is mounted in Vault
+  kubernetesMountPath: my-cluster
   roleName: testops
   secretPath: secret/data/testops-credentials
   smtpPath: secret/data/smtp-credentials
+  mountPath: /mnt/secrets-store
 
 allure:
   # No Settings from this helm chart will be applied except ENV. (For internal use)
@@ -561,6 +565,7 @@ monitoring:
 rbac:
   enabled: true
   serviceAccountName: allure-testops-sa
+  serviceAccountCreate: true
   rules:
     - apiGroups:
         - ''

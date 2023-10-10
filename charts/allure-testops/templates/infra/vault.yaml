@@ -47,6 +47,13 @@ spec:
         - objectName: "smtpPassword"
           key: "smtpPassword"
   parameters:
+{{- if .Values.vault.url }}
+    vaultAddress: {{ .Values.vault.url }}
+    vaultSkipTLSVerify: {{ .Values.vault.skipTLSVerify }}
+{{- end }}
+{{- if .Values.vault.kubernetesMountPath }}
+    vaultKubernetesMountPath: {{ .Values.vault.kubernetesMountPath }}
+{{- end }}
     roleName: "{{ .Values.vault.roleName }}"
     objects: |
       - objectName: "cryptoPass"

@@ -169,7 +169,7 @@ spec:
 {{- if .Values.vault.enabled }}
           volumeMounts:
             - name: vault-creds
-              mountPath: "/mnt/secrets-store"
+              mountPath: "{{ .Values.vault.mountPath }}"
               readOnly: true
       volumes:
         - name: vault-creds

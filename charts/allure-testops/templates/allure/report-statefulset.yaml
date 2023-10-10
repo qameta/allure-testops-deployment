@@ -209,7 +209,7 @@ spec:
 {{- end }}
 {{- if .Values.vault.enabled }}
             - name: vault-creds
-              mountPath: "/mnt/secrets-store"
+              mountPath: "{{ .Values.vault.mountPath }}"
               readOnly: true
 {{- end }}
 {{- if .Values.postgresql.external.pgbouncer.enabled }}
