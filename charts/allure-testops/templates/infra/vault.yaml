@@ -49,7 +49,7 @@ spec:
   parameters:
 {{- if .Values.vault.url }}
     vaultAddress: {{ .Values.vault.url }}
-    vaultSkipTLSVerify: {{ .Values.vault.skipTLSVerify }}
+    vaultSkipTLSVerify: {{ .Values.vault.skipTLSVerify | quote }}
 {{- end }}
 {{- if .Values.vault.kubernetesMountPath }}
     vaultKubernetesMountPath: {{ .Values.vault.kubernetesMountPath }}
