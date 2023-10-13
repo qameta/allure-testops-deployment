@@ -133,8 +133,10 @@ spec:
               value: "{{ .Values.allure.auth.ldap.passwordAttribute }}"
             - name: {{ .Values.build }}_LOGIN_LDAP_URL
               value: "{{ .Values.allure.auth.ldap.url }}"
+{{- if .Values.allure.auth.ldap.user.dnPatterns }}
             - name: {{ .Values.build }}_LOGIN_LDAP_USERDNPATTERNS
               value: "{{ .Values.allure.auth.ldap.user.dnPatterns }}"
+{{- end }}
             - name: {{ .Values.build }}_LOGIN_LDAP_USERSEARCHBASE
               value: "{{ .Values.allure.auth.ldap.user.searchBase }}"
             - name: {{ .Values.build }}_LOGIN_LDAP_USERSEARCHFILTER
