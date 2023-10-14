@@ -90,6 +90,7 @@ network:
     # Update if you are using nginx as ingress controller
     enabled: false
     className:
+    labels: []
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/proxy-body-size: "500m"
