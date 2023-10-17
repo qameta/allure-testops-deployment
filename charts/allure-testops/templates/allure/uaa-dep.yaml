@@ -173,7 +173,11 @@ spec:
               value: {{ .Values.allure.auth.defaultRole }}
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPROLEATTRIBUTE
               value: {{ .Values.allure.auth.oidc.roleAttribute }}
+            - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
+              value: "{{ .Values.allure.auth.oidc.syncRoles }}"
 {{- if .Values.allure.auth.oidc.syncRoles }}
+            - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
+              value: "{{ .Values.allure.auth.oidc.syncRoles }}"
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEUSERGROUPS
               value: "{{ .Values.allure.auth.oidc.userGroupName }}"
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEADMINGROUPS
