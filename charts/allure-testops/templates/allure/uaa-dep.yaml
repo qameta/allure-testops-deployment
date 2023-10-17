@@ -176,8 +176,6 @@ spec:
             - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
               value: "{{ .Values.allure.auth.oidc.syncRoles }}"
 {{- if .Values.allure.auth.oidc.syncRoles }}
-            - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
-              value: "{{ .Values.allure.auth.oidc.syncRoles }}"
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEUSERGROUPS
               value: "{{ .Values.allure.auth.oidc.userGroupName }}"
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEADMINGROUPS
