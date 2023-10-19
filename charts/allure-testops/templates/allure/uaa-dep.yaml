@@ -191,16 +191,16 @@ spec:
               value: {{ .Values.allure.auth.saml.lastNameAttribute }}
             - name: {{ .Values.build }}_LOGIN_SAML2_EMAILATTRIBUTE
               value: {{ .Values.allure.auth.saml.emailAttribute }}
-{{- end }}
-{{- if .Values.allure.auth.saml.syncRoles }}
             - name: {{ .Values.build }}_LOGIN_SAML2_SYNCROLES
               value: "{{ .Values.allure.auth.saml.syncRoles }}"
+{{- if .Values.allure.auth.saml.syncRoles }}
             - name: {{ .Values.build }}_LOGIN_SAML2_GROUPROLEATTRIBUTE
               value: {{ .Values.allure.auth.saml.groups.groupRoleAttribute }}
             - name: {{ .Values.build }}_LOGIN_SAML2_GROUPAUTHORITIES_ROLEUSERGROUPS
               value: "{{ .Values.allure.auth.saml.groups.roleUserGroups }}"
             - name: {{ .Values.build }}_LOGIN_SAML2_GROUPAUTHORITIES_ROLEADMINGROUPS
               value: "{{ .Values.allure.auth.saml.groups.roleAdminGroups }}"
+{{- end }}
 {{- end }}
 {{- if .Values.smtp.enabled }}
             - name: SPRING_MAIL_HOST
