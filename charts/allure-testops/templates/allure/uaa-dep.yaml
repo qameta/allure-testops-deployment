@@ -143,6 +143,8 @@ spec:
               value: "{{ .Values.allure.auth.ldap.user.searchFilter }}"
             - name: {{ .Values.build }}_LOGIN_LDAP_UIDATTRIBUTE
               value: "{{ .Values.allure.auth.ldap.uidAttribute }}"
+            - name: {{ .Values.build }}_LOGIN_LDAP_SYNCROLES
+              value: "{{ .Values.allure.auth.ldap.syncRoles }}"
 {{- if .Values.allure.auth.ldap.syncRoles }}
             - name: {{ .Values.build }}_LOGIN_LDAP_GROUPSEARCHBASE
               value: "{{ .Values.allure.auth.ldap.group.searchBase }}"
@@ -150,8 +152,6 @@ spec:
               value: "{{ .Values.allure.auth.ldap.group.searchFilter }}"
             - name: {{ .Values.build }}_LOGIN_LDAP_GROUPROLEATTRIBUTE
               value: "{{ .Values.allure.auth.ldap.group.roleAttribute }}"
-            - name: {{ .Values.build }}_LOGIN_LDAP_SYNCROLES
-              value: "{{ .Values.allure.auth.ldap.syncRoles }}"
             - name: {{ .Values.build }}_LOGIN_LDAP_GROUPAUTHORITIES_ROLEUSERGROUPS
               value: "{{ .Values.allure.auth.ldap.userGroupName }}"
             - name: {{ .Values.build }}_LOGIN_LDAP_GROUPAUTHORITIES_ROLEADMINGROUPS
@@ -168,14 +168,14 @@ spec:
                   name: {{ $secret_name }}
                   key: ldapPass
 {{- end }}
-{{ if .Values.allure.auth.oidc }}
+{{ if .Values.allure.auth.oidc.enabled }}
             - name: {{ .Values.build }}_LOGIN_OPENID_DEFAULTROLE
               value: {{ .Values.allure.auth.defaultRole }}
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPROLEATTRIBUTE
               value: {{ .Values.allure.auth.oidc.roleAttribute }}
-{{- if .Values.allure.auth.oidc.syncRoles }}
             - name: {{ .Values.build }}_LOGIN_OPENID_SYNCROLES
               value: "{{ .Values.allure.auth.oidc.syncRoles }}"
+{{- if .Values.allure.auth.oidc.syncRoles }}
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEUSERGROUPS
               value: "{{ .Values.allure.auth.oidc.userGroupName }}"
             - name: {{ .Values.build }}_LOGIN_OPENID_GROUPAUTHORITIES_ROLEADMINGROUPS
@@ -191,16 +191,16 @@ spec:
               value: {{ .Values.allure.auth.saml.lastNameAttribute }}
             - name: {{ .Values.build }}_LOGIN_SAML2_EMAILATTRIBUTE
               value: {{ .Values.allure.auth.saml.emailAttribute }}
-{{- end }}
-{{- if .Values.allure.auth.saml.syncRoles }}
             - name: {{ .Values.build }}_LOGIN_SAML2_SYNCROLES
               value: "{{ .Values.allure.auth.saml.syncRoles }}"
+{{- if .Values.allure.auth.saml.syncRoles }}
             - name: {{ .Values.build }}_LOGIN_SAML2_GROUPROLEATTRIBUTE
               value: {{ .Values.allure.auth.saml.groups.groupRoleAttribute }}
             - name: {{ .Values.build }}_LOGIN_SAML2_GROUPAUTHORITIES_ROLEUSERGROUPS
               value: "{{ .Values.allure.auth.saml.groups.roleUserGroups }}"
             - name: {{ .Values.build }}_LOGIN_SAML2_GROUPAUTHORITIES_ROLEADMINGROUPS
               value: "{{ .Values.allure.auth.saml.groups.roleAdminGroups }}"
+{{- end }}
 {{- end }}
 {{- if .Values.smtp.enabled }}
             - name: SPRING_MAIL_HOST
