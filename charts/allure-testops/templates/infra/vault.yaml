@@ -38,10 +38,12 @@ spec:
           key: "rabbitUser"
         - objectName: "rabbitPass"
           key: "rabbitPass"
+{{- if not .Values.aws.enabled }}
         - objectName: "s3AccessKey"
           key: "s3AccessKey"
         - objectName: "s3SecretKey"
           key: "s3SecretKey"
+{{- end }}
         - objectName: "smtpUsername"
           key: "smtpUsername"
         - objectName: "smtpPassword"
@@ -108,6 +110,7 @@ spec:
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "rabbit_pass"
 
+{{- if not .Values.aws.enabled }}
       - objectName: "s3AccessKey"
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "s3_access_key"
@@ -115,6 +118,7 @@ spec:
       - objectName: "s3SecretKey"
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "s3_secret_key"
+{{- end }}
 
       - objectName: "smtpUsername"
         secretPath: "{{ .Values.vault.smtpPath }}"
