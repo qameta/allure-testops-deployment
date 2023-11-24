@@ -9,7 +9,9 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
+{{- if .Values.network.ingress.labels }}
 {{ toYaml .Values.network.ingress.labels | indent 4 }}
+{{- end }}
 {{- if .Values.network.ingress.annotations }}
   annotations:
 {{ toYaml .Values.network.ingress.annotations | indent 4 }}
