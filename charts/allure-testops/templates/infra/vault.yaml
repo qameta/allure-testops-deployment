@@ -127,4 +127,13 @@ spec:
       - objectName: "smtpPassword"
         secretPath: "{{ .Values.vault.smtpPath }}"
         secretKey: "password"
+        
+{{- if .Values.allure.auth.oidc.enabled }}
+      - objectName: "clientId"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "clientId"
+
+      - objectName: "clientSecret"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "clientSecret"
 {{- end }}
