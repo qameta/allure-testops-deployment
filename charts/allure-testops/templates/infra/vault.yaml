@@ -137,3 +137,4 @@ spec:
         secretPath: "{{ .Values.vault.secretPath }}"
         secretKey: "clientSecret"
 {{- end }}
+{{- end }}
