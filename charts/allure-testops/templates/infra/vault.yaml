@@ -48,6 +48,22 @@ spec:
           key: "smtpUsername"
         - objectName: "smtpPassword"
           key: "smtpPassword"
+
+{{- if .Values.allure.auth.oidc.enabled }}
+        - objectName: "clientId"
+          key: "clientId"
+
+        - objectName: "clientSecret"
+          key: "clientSecret"
+{{- end }}
+{{- if .Values.allure.auth.ldap.enabled }}
+        - objectName: "ldapUser"
+          key: "ldapUser"
+
+        - objectName: "ldapPass"
+          key: "ldapPass"
+
+{{- end }}
   parameters:
 {{- if .Values.vault.url }}
     vaultAddress: {{ .Values.vault.url }}
@@ -127,14 +143,23 @@ spec:
       - objectName: "smtpPassword"
         secretPath: "{{ .Values.vault.smtpPath }}"
         secretKey: "password"
-        
+
 {{- if .Values.allure.auth.oidc.enabled }}
       - objectName: "clientId"
         secretPath: "{{ .Values.vault.secretPath }}"
-        secretKey: "clientId"
+        secretKey: "client_id"
 
       - objectName: "clientSecret"
         secretPath: "{{ .Values.vault.secretPath }}"
-        secretKey: "clientSecret"
+        secretKey: "client_secret"
+{{- end }}
+{{- if .Values.allure.auth.ldap.enabled }}
+      - objectName: "ldapUser"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "ldap_user"
+
+      - objectName: "ldapPass"
+        secretPath: "{{ .Values.vault.secretPath }}"
+        secretKey: "ldap_pass"
 {{- end }}
 {{- end }}
