@@ -1,6 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
+## use the most recent version from here: https://docs.qameta.io/allure-testops/release-notes/
 version: 4.22.0
 
 releaseName: allure-testops
