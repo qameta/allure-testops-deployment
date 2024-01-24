@@ -47,7 +47,7 @@ spec:
       initContainers:
 {{- if .Values.certificates.configmapName }}
         - name: certs-init
-          image: quay.io/ansible/awx-ee:latest
+          image: amazonlinux:2
           imagePullPolicy: {{ .Values.registry.pullPolicy }}
           command:
             - /bin/sh
@@ -267,17 +267,17 @@ spec:
 {{- end }}
 {{- if .Values.proxy.enabled }}
             - name: http_proxy
-              value: {{ .Values.proxy.httpProxy }}
+              value: "{{ .Values.proxy.httpProxy }}"
             - name: HTTP_PROXY
-              value: {{ .Values.proxy.httpProxy }}
+              value: "{{ .Values.proxy.httpProxy }}"
             - name: https_proxy
-              value: {{ .Values.proxy.httpsProxy }}
+              value: "{{ .Values.proxy.httpsProxy }}"
             - name: HTTPS_PROXY
-              value: {{ .Values.proxy.httpsProxy }}
+              value: "{{ .Values.proxy.httpsProxy }}"
             - name: no_proxy
-              value: {{ .Values.proxy.noProxy }}
+              value: "{{ .Values.proxy.noProxy }}"
             - name: NO_PROXY
-              value: {{ .Values.proxy.noProxy }}
+              value: "{{ .Values.proxy.noProxy }}"
 {{- end }}
 {{- range $name, $value := .Values.uaa.env.open }}
             - name: {{ $name | quote }}

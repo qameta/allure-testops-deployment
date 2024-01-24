@@ -290,9 +290,9 @@ certificates:
 
 proxy:
   enabled: false
-  httpProxy: ""
-  httpsProxy: ""
-  noProxy: "localhost,127.0.0.1,10.0.0.0/8"
+  httpProxy:
+  httpsProxy:
+  noProxy: localhost,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12, .local
 
 # Provide your smtp config to let TestOps send you emails
 smtp:
