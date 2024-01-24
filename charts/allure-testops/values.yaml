@@ -1,6 +1,7 @@
 ## there is no correlation between helm chart release and Allure TestOps release
 
 ## this is Allure TestOps release to be deployed
+## use the most recent version from here: https://docs.qameta.io/allure-testops/release-notes/
 version: 4.22.0
 
 releaseName: allure-testops
@@ -185,13 +186,18 @@ rabbitmq:
     vhost: "/"
 
 postgresql:
-  # If enabled ('true'), then Helm chart will deploy PostgreSQL database as part of the deployment
-  # If set to 'false' the deployment will use dedicated PostgreSQL database server deployed in your infrastructure
+  # If enabled (postgresql.enabled = true), then Helm chart will deploy PostgreSQL database as part of the deployment 
+  # which can be used for demo purposes only not as a production system.
+  ### WARNING ###
+  ### Please do not, set to 'true' for a system in production!!!!!!!!!! ###
+  ### Production system with postgresql.enabled = true cannot be supported ###
+  # If set to postgresql.enabled = false, the deployment will expect dedicated PostgreSQL database server deployed in your infrastructure
   enabled: false
   connectionTimeout: 60000
   auth:
     username: allure
     password: allure
+  # addresses and credentials of the dedicated databases (deployed separately)
   external:
     uaaHost: db.example.com
     uaaPort: 5432
