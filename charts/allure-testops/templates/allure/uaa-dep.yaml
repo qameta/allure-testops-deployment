@@ -45,21 +45,33 @@ spec:
 {{ toYaml .Values.uaa.nodeSelector | indent 8 }}
 {{- end }}
       initContainers:
+{{- if .Values.certificates.configmapName }}
+        - name: certs-init
+          image: quay.io/ansible/awx-ee:latest
+          imagePullPolicy: {{ .Values.registry.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /etc/pki/ca-trust/extracted/{java,pem,openssl,edk2}
+              update-ca-trust
+          volumeMounts:
+            - name: ssl-path
+              mountPath: "/etc/pki/ca-trust/extracted"
+            - name: certs
+              mountPath: /etc/pki/ca-trust/source/anchors/job-ca.crt
+              subPath: job-ca.crt
+              readOnly: true
+{{- end }}
         - name: db-readiness-check
           image: {{ .Values.postgresql.init.image | quote }}
 {{- with .Values.postgresql.init.resources }}
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
-{{- if .Values.postgresql.external.pgbouncer.enabled }}
-          command: [ 'sh', '-c',
-            'until pg_isready -h {{ .Values.postgresql.external.uaaHost }} -p {{ .Values.postgresql.external.uaaPort }};
-             do echo waiting for database; sleep 2; done;' ]
-  {{- else }}
           command: [ 'sh', '-c',
             'until pg_isready -h {{ template "uaaDBHost" . }} -p {{ template "uaaDBPort" . }};
              do echo waiting for database; sleep 2; done;' ]
-  {{- end }}
       containers:
         - name: {{ template "allure-testops.uaa.fullname" . }}
           image: "{{ template "getImageRegistry" . }}{{ .Values.uaa.image }}:{{ .Values.version | default .Chart.AppVersion }}"
@@ -253,9 +265,19 @@ spec:
                   name: {{ $secret_name }}
                   key: "licenseKey"
 {{- end }}
-{{- if .Values.certificates.staticCerts }}
-            - name: STATIC_CERTS
-              value: "{{ join "," .Values.certificates.staticCerts }}"
+{{- if .Values.proxy.enabled }}
+            - name: http_proxy
+              value: {{ .Values.proxy.httpProxy }}
+            - name: HTTP_PROXY
+              value: {{ .Values.proxy.httpProxy }}
+            - name: https_proxy
+              value: {{ .Values.proxy.httpsProxy }}
+            - name: HTTPS_PROXY
+              value: {{ .Values.proxy.httpsProxy }}
+            - name: no_proxy
+              value: {{ .Values.proxy.noProxy }}
+            - name: NO_PROXY
+              value: {{ .Values.proxy.noProxy }}
 {{- end }}
 {{- range $name, $value := .Values.uaa.env.open }}
             - name: {{ $name | quote }}
@@ -278,53 +300,29 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
+          volumeMounts:
 {{- if .Values.vault.enabled }}
-          volumeMounts:
             - name: vault-creds
               mountPath: "{{ .Values.vault.mountPath }}"
               readOnly: true
-{{- if .Values.postgresql.external.pgbouncer.enabled }}
-        - name: pgbouncer
-          image: {{ .Values.postgresql.external.pgbouncer.image | quote }}
-          imagePullPolicy: {{ .Values.registry.pullPolicy }}
-          volumeMounts:
-            - name: vault-creds
-              mountPath: "{{ .Values.vault.mountPath }}"
-              readOnly: true
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - killall -INT pgbouncer && sleep 120
-          env:
-            - name: DB_HOST
-              value: {{ .Values.postgresql.external.uaaHost }}
-            - name: DB_PORT
-              value: {{ .Values.postgresql.external.uaaPort | quote }}
-            - name: DB_NAME
-              value: {{ .Values.postgresql.external.uaaDbName }}
-            - name: POOL_MODE
-              value: {{ .Values.postgresql.external.pgbouncer.operationMode }}
-            - name: SERVER_RESET_QUERY
-              value: DISCARD ALL
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: uaaDbUser
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: uaaDbPass
+{{- end }}
+{{- if .Values.certificates.configmapName }}
+            - name: ssl-path
+              mountPath: "/etc/pki/ca-trust/extracted"
 {{- end }}
       volumes:
+{{- if .Values.vault.enabled }}
         - name: vault-creds
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
               secretProviderClass: {{ template "allure-testops.fullname" . }}
+{{- end }}
+{{- if .Values.certificates.configmapName }}
+        - name: certs
+          configMap:
+            name: {{ .Values.certificates.configmapName }}
+        - name: ssl-path
+          emptyDir: {}
 {{- end }}

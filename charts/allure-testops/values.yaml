@@ -204,10 +204,6 @@ postgresql:
     reportDbName: report
     reportUsername: report
     reportPassword: secret
-    pgbouncer:
-      enabled: false
-      image: docker.io/edoburu/pgbouncer:1.20.1-p0
-      operationMode: session
   # This works for built-in postgres only provided with this chart. For external DB you need to execute these manually when creating the databases
   primary:
     initdb:
@@ -281,15 +277,16 @@ minio:
 
 
 certificates:
-  # In case you use self-signed certificates, state all endpoints except for database
-  # example: endpoints: ldaps.example.com:636,rabbit.example.com:5672
-  # Script inside will retrieve certificate for you and store in jks store.
-  endpoints:
-  # List of endpoints with self-signed certificates
-  staticCerts: []
-  # example
-  # staticCerts:
-  #  - https://example.url/ca.pem
+  # In case you use self-signed certificates make a configmap with list of certificates
+  configmapName:
+  # For example bundle.crt
+  fileName:
+
+proxy:
+  enabled: false
+  httpProxy: ""
+  httpsProxy: ""
+  noProxy: "localhost,127.0.0.1,10.0.0.0/8"
 
 # Provide your smtp config to let TestOps send you emails
 smtp:

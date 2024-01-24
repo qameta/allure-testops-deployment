@@ -89,11 +89,7 @@
 {{- if .Values.postgresql.enabled }}
   {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" }}
 {{- else }}
-  {{- if .Values.postgresql.external.pgbouncer.enabled }}
-    {{- print "localhost"}}
-  {{- else }}
-    {{- print .Values.postgresql.external.uaaHost }}
-  {{- end }}
+  {{- print .Values.postgresql.external.uaaHost }}
 {{- end }}
 {{- end }}
 
@@ -101,13 +97,10 @@
 {{- if .Values.postgresql.enabled }}
   {{- printf "%.f" .Values.postgresql.primary.service.ports.postgresql }}
 {{- else }}
-  {{- if .Values.postgresql.external.pgbouncer.enabled }}
-    {{- print "5432"}}
-  {{- else }}
-    {{- print .Values.postgresql.external.uaaPort }}
-  {{- end }}
+  {{- print .Values.postgresql.external.uaaPort }}
 {{- end }}
 {{- end }}
+
 {{- define "uaaDBName" }}
 {{- if .Values.postgresql.enabled }}
   {{- print "uaa" }}
@@ -120,11 +113,7 @@
 {{- if .Values.postgresql.enabled }}
   {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" }}
 {{- else }}
-  {{- if .Values.postgresql.external.pgbouncer.enabled }}
-    {{- print "localhost"}}
-  {{- else }}
-    {{- print .Values.postgresql.external.reportHost }}
-  {{- end }}
+  {{- print .Values.postgresql.external.reportHost }}
 {{- end }}
 {{- end }}
 
@@ -132,11 +121,7 @@
 {{- if .Values.postgresql.enabled }}
   {{- printf "%.f" .Values.postgresql.primary.service.ports.postgresql }}
 {{- else }}
-    {{- if .Values.postgresql.external.pgbouncer.enabled }}
-      {{- print "5432" }}
-    {{- else }}
-      {{- print .Values.postgresql.external.reportPort}}
-    {{- end }}
+  {{- print .Values.postgresql.external.reportPort }}
 {{- end }}
 {{- end }}
 
