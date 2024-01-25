@@ -51,15 +51,27 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
-  {{- if .Values.postgresql.external.pgbouncer.enabled }}
-          command: [ 'sh', '-c',
-            'until pg_isready -h {{ .Values.postgresql.external.reportHost }} -p {{ .Values.postgresql.external.reportPort }};
-             do echo waiting for database; sleep 2; done;' ]
-  {{- else }}
           command: [ 'sh', '-c',
             'until pg_isready -h {{ template "reportDBHost" . }} -p {{ template "reportDBPort" . }};
              do echo waiting for database; sleep 2; done;' ]
-  {{- end }}
+{{- if .Values.certificates.configmapName }}
+        - name: certs-init
+          image: amazonlinux:2
+          imagePullPolicy: {{ .Values.registry.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /etc/pki/ca-trust/extracted/{java,pem,openssl,edk2}
+              update-ca-trust
+          volumeMounts:
+            - name: ssl-path
+              mountPath: "/etc/pki/ca-trust/extracted"
+            - name: certs
+              mountPath: /etc/pki/ca-trust/source/anchors/job-ca.crt
+              subPath: job-ca.crt
+              readOnly: true
+{{- end }}
 {{- $secret_name := include "allure-testops.secret.name" . }}
       containers:
         - name: {{ template "allure-testops.report.fullname" . }}
@@ -167,6 +179,20 @@ spec:
             - name: ALLURE_CACHE-TTL_WIDGETS_TC-LAST-RESULT
               value: {{ .Values.report.cache.ttlWidgetsTcLastResult }}
 {{- end}}
+{{- if .Values.proxy.enabled }}
+            - name: http_proxy
+              value: "{{ .Values.proxy.httpProxy }}"
+            - name: HTTP_PROXY
+              value: "{{ .Values.proxy.httpProxy }}"
+            - name: https_proxy
+              value: "{{ .Values.proxy.httpsProxy }}"
+            - name: HTTPS_PROXY
+              value: "{{ .Values.proxy.httpsProxy }}"
+            - name: no_proxy
+              value: "{{ .Values.proxy.noProxy }}"
+            - name: NO_PROXY
+              value: "{{ .Values.proxy.noProxy }}"
+{{- end }}
 {{- if or (eq .Values.postgresql.external.sslMode "require") (eq .Values.postgresql.external.sslMode "verify-ca") (eq .Values.postgresql.external.sslMode "verify-full") }}
             - name: TLS_DB_ENDPOINTS
               value: "{{ .Values.postgresql.external.reportHost}}:{{ .Values.postgresql.external.reportPort }}"
@@ -201,7 +227,6 @@ spec:
           resources:
 {{ toYaml . | indent 12 }}
 {{- end }}
-{{- if or (eq .Values.fs.type "CSI") (.Values.vault.enabled) }}
           volumeMounts:
 {{- if eq .Values.fs.type "CSI" }}
             - mountPath: {{ .Values.fs.csiStorage.mountPoint }}
@@ -212,42 +237,9 @@ spec:
               mountPath: "{{ .Values.vault.mountPath }}"
               readOnly: true
 {{- end }}
-{{- if .Values.postgresql.external.pgbouncer.enabled }}
-        - name: pgbouncer
-          image: {{ .Values.postgresql.external.pgbouncer.image | quote }}
-          imagePullPolicy: {{ .Values.registry.pullPolicy }}
-          volumeMounts:
-            - name: vault-creds
-              mountPath: "/mnt/secrets-store"
-              readOnly: true
-          lifecycle:
-            preStop:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - killall -INT pgbouncer && sleep 120
-          env:
-            - name: DB_HOST
-              value: {{ .Values.postgresql.external.reportHost }}
-            - name: DB_PORT
-              value: {{ .Values.postgresql.external.reportPort | quote }}
-            - name: DB_NAME
-              value: {{ .Values.postgresql.external.reportDbName }}
-            - name: POOL_MODE
-              value: {{ .Values.postgresql.external.pgbouncer.operationMode }}
-            - name: SERVER_RESET_QUERY
-              value: DISCARD ALL
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: reportDbUser
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $secret_name }}
-                  key: reportDbPass
+{{- if .Values.certificates.configmapName }}
+            - name: ssl-path
+              mountPath: "/etc/pki/ca-trust/extracted"
 {{- end }}
       volumes:
 {{- if eq .Values.fs.type "CSI" }}
@@ -263,4 +255,10 @@ spec:
             volumeAttributes:
               secretProviderClass: {{ template "allure-testops.fullname" . }}
 {{- end }}
+{{- if .Values.certificates.configmapName }}
+        - name: certs
+          configMap:
+            name: {{ .Values.certificates.configmapName }}
+        - name: ssl-path
+          emptyDir: {}
 {{- end }}
