@@ -290,8 +290,9 @@ certificates:
 
 proxy:
   enabled: false
-  httpProxy:
-  httpsProxy:
+  proxyHost: example.com
+  proxyPort: 3128
+  nonProxy: localhost|127.*|10.*|172.16.*|*.local
   noProxy: localhost,127.0.0.0/8,10.0.0.0/8,172.16.0.0/12, .local
 
 # Provide your smtp config to let TestOps send you emails
