@@ -2,7 +2,7 @@
 
 ## Deploy description
 
-https://docs.qameta.io/allure-testops/getstarted/kubernetes/
+https://docs.qameta.io/allure-testops/install/kubernetes/
 
 ## values.yaml template file
 
