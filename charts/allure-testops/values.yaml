@@ -176,7 +176,7 @@ rabbitmq:
     # If you have dedicated RabbitMQ server, then take this value from dedicated RabbitMQ settings
     # Otherwise set to your own random string
     erlangCookie: fTwP5LxRVjZ9XJkyWmJSKR5hPDWMjkQx
-    # Credentials for built-in RabbitMQ
+    # Credentials for the access to RabbitMQ
     username: allure
     password: allure
   resources: {}
