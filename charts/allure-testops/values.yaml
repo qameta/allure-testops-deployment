@@ -251,6 +251,10 @@ fs:
     # If you run Allure Testops in AWS EKS you don't need stating accessKey & secretKey
     accessKey: foo
     secretKey: bar
+    kms:
+      enabled: false
+      # If using Vault then this is ignored
+      kmsKeyId: 
   csiStorage:
     storageClass: ""
     existingVolumeName: ""

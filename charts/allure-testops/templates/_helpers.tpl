@@ -223,6 +223,13 @@
 {{- else }}
     value: {{ .Values.fs.s3.region}}
 {{- end }}
+{{ if .Values.fs.s3.kms.enabled }}
+  - name: {{ .Values.build}}_ALLURE_BLOBSTORAGE_S3_KMSKEYID
+    valueFrom:
+      secretKeyRef:
+        name: {{ template "allure-testops.secret.name" . }}
+        key: "s3KmsKeyId"
+{{- end}}
 {{- if and (not .Values.allure.manualConfig) (not .Values.aws.enabled) }}
   - name: {{ .Values.build }}_BLOBSTORAGE_S3_ACCESSKEY
     valueFrom:
