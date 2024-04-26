@@ -20,11 +20,6 @@ password: admin
 cryptoPass: <ChangeMePleaseDuringFirstDeployment>
 jwtSecret: <ChangeMeEither>
 
-licence:
-  enabled: false
-
-subscription:
-  enabled: false
 
 ## Security Context
 ## 65534 started by a user with lowest privilegies
@@ -588,3 +583,13 @@ rbac:
         - get
         - watch
         - list
+
+##########################################################################################################################################
+## these are service parameters that are not supposed to be altered by the end users when deploying Allure Testops as on-premises solution
+## please do not alter the values and do not delete when deploying
+##########################################################################################################################################
+licence:
+  enabled: false
+
+subscription:
+  enabled: false
