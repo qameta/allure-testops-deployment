@@ -505,7 +505,7 @@ report:
   replicaCount: 1
   cache:
     enabled: false
-    ttlByDefault: 1m
+    ttlByDefault: 30m
     ttlWidgetsAutomationTrend: 1h
     ttlWidgetsProjectMetricTrend: 1h
     ttlWidgetsLaunchDurationHistogram: 1h
