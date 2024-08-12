@@ -267,7 +267,7 @@
       {{- $xmx = mul $xms 3 }}
     {{- end }}
   {{- end }}
-  {{- if gt ($v | trimSuffix "Gi" | atoi ) 6 }}
+  {{- if gt ($v | trimSuffix "Gi" | atoi ) 12 }}
     {{- printf "-XX:+UseG1GC -XX:+UseStringDeduplication -Xms%d%s -Xmx%d%s" $xms $unit $xmx $unit }}
   {{- else }}
     {{- printf "-XX:+UseParallelGC -Xms%d%s -Xmx%d%s" $xms $unit $xmx $unit }}
