@@ -514,10 +514,10 @@ report:
     ttlWidgetsTrStatisticTrend: 1h
     ttlWidgetsTcLastResult: 1h
   image: allure-report
-  maxDBConn: 10
+  maxDBConn: 50
   maxConcurrency: 5
   maxS3Concurrency: 200
-  taskExecutorCorePoolSize: 200
+  taskExecutorCorePoolSize: 10
   uploads:
     parseConsumers: 10
     storeConsumers: 2
