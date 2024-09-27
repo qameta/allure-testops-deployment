@@ -1,6 +1,6 @@
 # This repositiry is outdated and mustnt' be used for the deployment of Allure TestOps
 
-[Use this helm chart instead](https://github.com/qameta/testops-deploy-helm-chart)
+[Please use the documentation pages instead](https://docs.qameta.io/allure-testops/install/kubernetes/)
 
 
 # Allure TestOps ver 4 deploy in kubernetes
